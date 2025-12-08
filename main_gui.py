@@ -17,9 +17,9 @@ class OrganizerApp(ttk.Window):
         self.geometry("700x550")
         self.resizable(False, False)
         
-        # Estilo personalizado para asegurar fuente
+        # Estilo personalizado para asegurar fuente y alto mínimo
         style = ttk.Style()
-        style.configure('TButton', font=('Segoe UI', 9, 'bold'))
+        style.configure('TButton', font=('Segoe UI', 9, 'bold'), padding=(10, 10))
 
         # Variables de estado
         self.source_path = tk.StringVar()
