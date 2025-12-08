@@ -6,6 +6,7 @@ import webbrowser
 import os
 import subprocess
 from pathlib import Path
+import ttkbootstrap as tb # Import as tb to avoid conflict
 from ttkbootstrap import Style
 from datetime import datetime
 
@@ -14,7 +15,7 @@ from src.scanner import scan_directory
 from src.mover import move_media_safe, STATUS_SUCCESS, STATUS_SKIPPED, STATUS_ERROR, STATUS_DUPLICATE
 from src.deduplicator import scan_and_move_duplicates
 
-class OrganizerApp(ttk.Window):
+class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
     def __init__(self):
         super().__init__(themename="darkly")
         self.title("Organizador Multimedia Pro v2.0")
