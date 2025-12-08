@@ -77,10 +77,10 @@ class OrganizerApp(ttk.Window):
         self.btn_start = ttk.Button(btn_frame, text="⚡ INICIAR ORGANIZACIÓN", command=self.start_process, bootstyle="success", width=25)
         self.btn_start.pack(side=RIGHT, padx=5)
 
-        self.btn_stop = ttk.Button(btn_frame, text="🛑 Detener", command=self.stop_process, state='disabled', bootstyle="danger-outline")
+        self.btn_stop = ttk.Button(btn_frame, text="🛑 Detener", command=self.stop_process, state='disabled', bootstyle="danger")
         self.btn_stop.pack(side=RIGHT, padx=5)
 
-        self.btn_open_log = ttk.Button(btn_frame, text="📄 Abrir Log", command=self.open_last_log, state='disabled', bootstyle="info-outline")
+        self.btn_open_log = ttk.Button(btn_frame, text="📄 Abrir Log", command=self.open_last_log, state='disabled', bootstyle="info")
         self.btn_open_log.pack(side=LEFT, padx=5)
 
         # Footer
