@@ -20,6 +20,7 @@ class OrganizerApp(ttk.Window):
         # Variables de estado
         self.source_path = tk.StringVar()
         self.dest_path = tk.StringVar()
+        self.dry_run = tk.BooleanVar(value=False) # Variable para Checkbox
         self.is_running = False
         self.stop_event = threading.Event()
 
@@ -49,6 +50,10 @@ class OrganizerApp(ttk.Window):
         dst_entry = ttk.Entry(rutas_frame, textvariable=self.dest_path, width=45)
         dst_entry.grid(row=3, column=0, padx=(0, 10))
         ttk.Button(rutas_frame, text="📂 Buscar", command=self.select_dest, bootstyle="secondary-outline").grid(row=3, column=1)
+        
+        # Checkbox Simulación
+        chk_dry = ttk.Checkbutton(rutas_frame, text="Modo Simulación (No mover archivos)", variable=self.dry_run, bootstyle="warning-round-toggle")
+        chk_dry.grid(row=4, column=0, sticky="w", pady=(15, 0))
 
         # --- SECCIÓN 2: Panel de Progreso y Logs ---
         progress_frame = ttk.Labelframe(main_container, text=" Estado del Proceso ", padding=15, bootstyle="success")
@@ -75,8 +80,11 @@ class OrganizerApp(ttk.Window):
         self.btn_stop = ttk.Button(btn_frame, text="🛑 Detener", command=self.stop_process, state='disabled', bootstyle="danger-outline")
         self.btn_stop.pack(side=RIGHT, padx=5)
 
+        self.btn_open_log = ttk.Button(btn_frame, text="📄 Abrir Log", command=self.open_last_log, state='disabled', bootstyle="info-outline")
+        self.btn_open_log.pack(side=LEFT, padx=5)
+
         # Footer
-        footer_lbl = ttk.Label(main_container, text="v1.0.0 | OrdenaFotos Local", font=("Segoe UI", 8), bootstyle="secondary")
+        footer_lbl = ttk.Label(main_container, text="v1.1.0 | OrdenaFotos Local", font=("Segoe UI", 8), bootstyle="secondary")
         footer_lbl.pack(side=LEFT, pady=5)
 
     def select_source(self):
@@ -89,15 +97,36 @@ class OrganizerApp(ttk.Window):
         if path:
             self.dest_path.set(path)
 
+    def open_last_log(self):
+        if hasattr(self, 'last_log_path') and self.last_log_path.exists():
+            import os
+            try:
+                os.startfile(self.last_log_path)
+            except Exception as e:
+                messagebox.showerror("Error", f"No se pudo abrir el log: {e}")
+        else:
+             messagebox.showinfo("Info", "No hay log reciente disponible.")
+
     def log(self, message):
+        # 1. UI Log
         self.log_text.config(state='normal')
         self.log_text.insert(tk.END, message + "\n")
         self.log_text.see(tk.END)
         self.log_text.config(state='disabled')
+        
+        # 2. File Log (Si tenemos un descriptor de archivo abierto)
+        if hasattr(self, 'log_file'):
+            try:
+                timestamp = time.strftime("%H:%M:%S")
+                self.log_file.write(f"[{timestamp}] {message}\n")
+                self.log_file.flush()
+            except Exception:
+                pass
 
     def start_process(self):
         src = self.source_path.get()
         dst = self.dest_path.get()
+        is_dry_run = self.dry_run.get()
 
         if not src or not dst:
             messagebox.showwarning("Faltan rutas", "Por favor selecciona origen y destino.")
@@ -110,20 +139,40 @@ class OrganizerApp(ttk.Window):
         self.is_running = True
         self.btn_start.config(state='disabled')
         self.btn_stop.config(state='normal')
-        self.source_path_entry_widget = None # TODO: Bloquear entry widgets si fuera necesario
+        self.btn_open_log.config(state='disabled')
         self.stop_event.clear()
         self.progress_bar.start(10)
 
         # Ejecutar en hilo separado para no congelar la UI
-        threading.Thread(target=self.run_organization_logic, args=(Path(src), Path(dst)), daemon=True).start()
+        threading.Thread(target=self.run_organization_logic, args=(Path(src), Path(dst), is_dry_run), daemon=True).start()
 
     def stop_process(self):
         if self.is_running:
             self.stop_event.set()
             self.log(">>> Deteniendo proceso... espere...")
 
-    def run_organization_logic(self, src: Path, dst: Path):
+    def run_organization_logic(self, src: Path, dst: Path, dry_run: bool):
+        # Iniciar Log Persistente
+        try:
+            log_filename = f"operaciones_{time.strftime('%Y-%m-%d_%H-%M-%S')}.log"
+            if dry_run: log_filename = "SIMULATION_" + log_filename
+            
+            if not dst.exists() and not dry_run:
+                dst.mkdir(parents=True, exist_ok=True)
+            
+            log_path = dst / log_filename
+            
+            if not dst.exists() and dry_run:
+                log_path = src / log_filename
+
+            self.log_file = open(log_path, "w", encoding="utf-8")
+            self.last_log_path = log_path # Guardar referencia para abrir después
+        except Exception as e:
+            self.log(f"Advertencia: No se pudo crear archivo de log: {e}")
+
         self.log(f"--- Iniciando escaneo en: {src} ---")
+        if dry_run:
+            self.log("=== MODO SIMULACIÓN: NO SE MOVERÁN ARCHIVOS ===")
         
         count_success = 0
         count_errors = 0
@@ -147,19 +196,10 @@ class OrganizerApp(ttk.Window):
                     break
 
                 # Lógica de Movimiento
-                # Por ahora acción de duplicado es 'ask', pero como es CLI/Hilo GUI, 
-                # implementaremos un manejo simplificado o popup sincrono (cuidado con thread safety).
-                # Para la v1 Usaremos 'rename' automático si es falso duplicado, y 'skip' si es true duplicate para no bloquear.
-                # O mejor, usamos ask_duplicate_action via invoke si tkinter thread safe.
-                
-                # Intento de mover con acción por defecto SKIP para duplicados exactos para evitar spam de popups en MVP
-                # En una v2 se puede hacer un queue para preguntar a la UI.
-                
-                result = move_media_safe(media_group, dst, duplicate_action='skip') # TODO: Hacer configurable en UI
+                result = move_media_safe(media_group, dst, duplicate_action='skip', dry_run=dry_run)
 
                 # Procesar Resultado
                 if result.status == STATUS_DUPLICATE:
-                    # Si 'skip' fallbackeo a mostrarlo
                     self.log(f"[DUP] {media_group.main_file.name} -> Duplicado exacto omitido.")
                     count_skipped += 1
                 
@@ -172,7 +212,8 @@ class OrganizerApp(ttk.Window):
                     count_errors += 1
                 
                 else: # SUCCESS
-                    # self.log(f"[OK] {media_group.main_file.name}") # Verbose off para velocidad
+                    if dry_run:
+                        self.log(f"[SIMULADO] Mover {media_group.main_file.name} -> {result.destination}")
                     count_success += 1
 
                 # Actualizar cada 5 archivos para no saturar UI
@@ -182,17 +223,26 @@ class OrganizerApp(ttk.Window):
 
             # 3. Limpieza
             if not self.stop_event.is_set():
-                self.log("--- Limpiando directorios vacíos en origen ---")
-                clean_empty_directories(src)
+                if not dry_run:
+                    self.log("--- Limpiando directorios vacíos en origen ---")
+                    clean_empty_directories(src)
+                else:
+                    self.log("--- Limpieza omitida (Dry Run) ---")
+                    
                 self.progress_bar['value'] = total_files
 
             # Resumen
             self.log(f"\n=== FINALIZADO ===")
-            self.log(f"Movidos: {count_success}")
+            self.log(f"Procesados: {count_success}")
             self.log(f"Omitidos/Duplicados: {count_skipped}")
             self.log(f"Errores: {count_errors}")
+            if hasattr(self, 'log_file'): 
+                self.log(f"Log guardado en: {log_path}")
             
-            messagebox.showinfo("Proceso Completado", f"Organización finalizada.\n\nMovidos: {count_success}\nOmitidos: {count_skipped}\nErrores: {count_errors}")
+            msg_title = "Proceso Completado"
+            if dry_run: msg_title += " (Simulación)"
+            
+            messagebox.showinfo(msg_title, f"Finalizado.\n\nExitosos: {count_success}\nOmitidos: {count_skipped}\nErrores: {count_errors}\n\nLog: {log_path.name}")
 
         except Exception as e:
             self.log(f"ERROR FATAL: {e}")
@@ -202,8 +252,11 @@ class OrganizerApp(ttk.Window):
             self.is_running = False
             self.btn_start.config(state='normal')
             self.btn_stop.config(state='disabled')
+            self.btn_open_log.config(state='normal') # Habilitar botón Log
             self.progress_bar.stop()
             self.progress_bar['mode'] = 'indeterminate'
+            if hasattr(self, 'log_file'):
+                self.log_file.close()
 
 if __name__ == "__main__":
     app = OrganizerApp()

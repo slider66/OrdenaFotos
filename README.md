@@ -105,9 +105,24 @@ Para garantizar que solo se gestionan duplicados verdaderos (mismo contenido, in
 
 En la versión actual (`v1.0`), la aplicación prioriza la **automatización desatendida** para no interrumpir procesos largos:
 
-- **Duplicados Exactos (Hash Idéntico):** Se aplica la acción **OMITIR**. El archivo de origen se preserva y no se mueve, evitando sobrescribir o duplicar información innecesaria en el destino. Se registra en el log.
-- **Colisión de Nombre (Hash Diferente):** Se aplica **RENOMBRADO AUTOMÁTICO**. El archivo se mueve renombrándolo como `archivo_dup_N.ext` para asegurar que ambos contenidos (el nuevo y el viejo) se conserven.
-- **Eliminar Original:** Actualmente no se borran originales detectados como duplicados exactos automáticamente por seguridad.
+- **Duplicados Exactos (Hash Idéntico):** Se aplica la acción **OMITIR**. El archivo de origen se preserva y no se mueve.
+- **Colisión de Nombre (Hash Diferente):** Se aplica **RENOMBRADO AUTOMÁTICO** (`archivo_dup_N.ext`).
+- **Eliminar Original:** Por seguridad, nunca se borran originales automáticamente en esta versión.
+
+## 🌟 Nuevas Características (v1.1)
+
+### 🧪 Modo Simulación (Dry Run)
+
+Activa la casilla **"Modo Simulación"** para ejecutar todo el análisis sin mover un solo archivo.
+
+- Verifica qué pasaría.
+- Genera logs completos.
+- Perfecto para ganar confianza antes de ordenar.
+
+### 📝 Logs Persistentes y Visor
+
+- **Historial:** Cada ejecución genera un archivo `operaciones_FECHA.log` en la carpeta destino.
+- **Botón "Abrir Log":** Al finalizar, pulsa este botón para ver el reporte inmediato sin buscar el archivo manualmente.
 
 ---
 
@@ -160,4 +175,5 @@ Esta aplicación ha sido sometida a una batería de tests automatizados para gar
    - Detecta si el archivo origen y destino son la misma ruta física (Idempotencia) y lo omite.
    - Detiene bucles infinitos si la carpeta destino está dentro del origen.
 5. **No Destructivo:** Confirmado que NUNCA se borra el origen sin antes validar la existencia y tamaño byte-a-byte en el destino.
+
 # OrdenaFotos
