@@ -1,372 +1,186 @@
-# 📂 Utilidad de Organización Multimedia Local
+# 📂 Local Media Organizer Utility
 
-## 🎯 Objetivo del Proyecto
+> 🇪🇸 [Leer en Español](README.es.md)
 
-Crear una aplicación de escritorio local, sencilla y robusta, diseñada para automatizar la organización de archivos multimedia (fotos y videos) desde una ruta de origen a una ruta de destino. El criterio de ordenamiento es la **fecha de creación/captura** de los archivos, garantizando la **integridad de los datos** durante el proceso de movimiento y manteniendo limpia la ruta de origen.
+## 🎯 Project Objective
 
-**Ejemplo de Organización:**
+Create a simple and robust local desktop application designed to automate the organization of media files (photos and videos) from a source path to a destination path. The sorting criterion is the **creation/capture date** of the files, ensuring **data integrity** during the collection process and keeping the source path clean.
 
-- **Ruta de Entrada:** `H:\DCIM\12312\`
-- **Ruta de Salida:** `C:\fotos\`
-- **Estructura Final:**
+**Organization Example:**
+
+- **Input Path:** `H:\DCIM\12312\`
+- **Output Path:** `C:\photos\`
+- **Final Structure:**
   ```
-  C:\fotos\
+  C:\photos\
   ├── 2019\
-  │   ├── enero\
-  │   └── febrero\
+  │   ├── 01-January\
+  │   └── 02-February\
   └── 2020\
-      └── marzo\
+      └── 03-March\
   ```
 
-## 🛠️ Stack Tecnológico Recomendado
+## 🛠️ Recommended Tech Stack
 
-El proyecto se desarrollará utilizando **Python 3.x** debido a su simplicidad, madurez en el manejo del sistema de archivos y las potentes librerías disponibles para la extracción de metadatos.
+The project relies on **Python 3.x** due to its simplicity, maturity in file system handling, and powerful libraries available for metadata extraction.
 
-| Componente                  | Módulo/Librería         | Finalidad Específica                                                  |
-| :-------------------------- | :---------------------- | :-------------------------------------------------------------------- |
-| **Lenguaje Base**           | Python 3.x              | Implementación de toda la lógica.                                     |
-| **Manejo de Archivos**      | `pathlib`, `shutil`     | Búsqueda recursiva, creación de directorios y movimiento de archivos. |
-| **Extracción de Metadatos** | `Pillow` (o `ExifRead`) | Lectura de datos EXIF para determinar la fecha de captura de fotos.   |
-| **Interfaz (Opcional)**     | Tkinter / Flet          | Interfaz de usuario para la selección de rutas.                       |
-
----
-
-## 🔑 Lógica Funcional Clave
-
-### 1. Extracción y Priorización de Fechas (EXIF)
-
-Para asegurar la **fecha más coherente** y ordenar correctamente los archivos, se aplicará la siguiente lógica de priorización:
-
-1.  **Prioridad 1 (Metadata):** Intentar extraer la fecha de captura/creación del archivo a partir de los metadatos **EXIF** (para fotos) o tags de video.
-2.  **Prioridad 2 (Sistema de Archivos - Creación):** Si no hay metadatos internos válidos, utilizar la **fecha de creación** del archivo registrada por el sistema operativo.
-3.  **Prioridad 3 (Sistema de Archivos - Modificación):** Si las fechas anteriores no son accesibles o coherentes (por ejemplo, en sistemas donde la fecha de creación se pierde), se utilizará la **fecha de última modificación**.
-
-La fecha resultante se utilizará para construir la estructura de carpetas `Año/Nombre del Mes`.
-
-### 2. Movimiento Seguro y Validación de Archivos
-
-Para evitar la pérdida de datos, el proceso de transferencia debe ser **atómico** (o simularlo con validación estricta).
-
-- **Paso 1: Movimiento:** Utilizar `shutil.move()` para transferir el archivo de la ruta de origen a la ruta de destino (`RutaSalida\Año\Mes\Archivo.ext`).
-- **Paso 2: Validación de Existencia:** Comprobar inmediatamente que el archivo se encuentra en la **ruta de destino**.
-- **Paso 3: Validación de Integridad:** Verificar que el **tamaño del archivo** en la ruta de destino **coincide exactamente** con el tamaño del archivo original.
-- **Paso 4: Confirmación:** **Solo si la existencia y la integridad (tamaño) están validadas**, se considera que el proceso ha finalizado correctamente. Si la validación falla, se debe registrar un error y mantener el archivo en la ruta de origen.
-
-### 3. Lógica de Limpieza de Carpetas Vacías
-
-Una vez que todos los archivos han sido procesados y movidos, se ejecutará un proceso de limpieza en la ruta de entrada para eliminar cualquier rastro innecesario.
-
-- **Barrido Recursivo Inverso:** Recorrer recursivamente todas las carpetas y subcarpetas de la **ruta de entrada**, comenzando por los directorios más profundos.
-- **Comprobación de Vacío:** Utilizar `os.listdir()` para verificar si la carpeta está completamente vacía (sin archivos ni subcarpetas).
-- **Eliminación:** Si la carpeta está vacía, se elimina (`os.rmdir()`). Este proceso garantiza que solo las estructuras de carpetas vacías sean removidas, dejando la ruta de origen organizada y limpia.
+| Component                | Module/Library           | Specific Purpose                                         |
+| :----------------------- | :----------------------- | :------------------------------------------------------- |
+| **Base Language**        | Python 3.x               | Implementation of all logic.                             |
+| **File Handling**        | `pathlib`, `shutil`      | Recursive search, directory creation, and file movement. |
+| **Metadata Extraction**  | `Pillow` (or `ExifRead`) | Reading EXIF data to determine photo capture date.       |
+| **Interface (Optional)** | Tkinter / Flet           | User interface for path selection.                       |
 
 ---
 
-## 💾 Soporte de Archivos Multimedia (Imágenes y Video)
+## 🔑 Key Functional Logic
 
-La aplicación debe ser capaz de identificar y procesar una lista exhaustiva de formatos de archivo comunes, RAW y auxiliares (Sidecar) utilizados por fabricantes clave como Apple (iPhone) y Sony.
+### 1. Date Extraction and Prioritization (EXIF)
 
-### A. Extensiones de Imagen Comunes
+To ensure the **most consistent date** and correctly order files, the following prioritization logic applies:
 
-| Tipo                                | Extensiones                                                                                                          |
+1.  **Priority 1 (Metadata):** Attempt to extract the capture/creation date from **EXIF** metadata (for photos) or video tags.
+2.  **Priority 2 (File System - Creation):** If no valid internal metadata exists, use the file's **creation date** registered by the operating system.
+3.  **Priority 3 (File System - Modification):** If previous dates are inaccessible or inconsistent (e.g., on systems where creation date is lost), use the **last modification date**.
+
+The resulting date constructs the folder structure `Year/Month Name`.
+
+### 2. Safe Movement and File Validation
+
+To prevent data loss, the transfer process must be **atomic** (or simulate it with strict validation).
+
+- **Step 1: Movement:** Use `shutil.move()` (or copy+delete) to transfer the file to the destination.
+- **Step 2: Existence Validation:** Immediately check that the file exists at the **destination path**.
+- **Step 3: Integrity Validation:** Verify that the **file size** at the destination **exactly matches** the original file size.
+- **Step 4: Confirmation:** **Only if existence and integrity (size) are validated**, the process is considered successful. If validation fails, an error is logged, and the file remains at the source.
+
+### 3. Empty Folder Cleanup Logic
+
+Once all files are processed and moved, a cleanup process runs on the input path to remove unnecessary clutter.
+
+- **Reverse Recursive Sweep:** Recursively traverse all folders and subfolders of the **input path**, starting from the deepest directories.
+- **Empty Check:** Use `os.listdir()` to verify if the folder is completely empty.
+- **Deletion:** If the folder is empty, it is removed (`os.rmdir()`). This ensures only empty directory structures are removed, leaving the source path organized and clean.
+
+---
+
+## 💾 Multimedia File Support (Images and Video)
+
+The application identifies and processes an exhaustive list of common file formats, RAW, and sidecar files used by key manufacturers like Apple (iPhone) and Sony.
+
+### A. Common Image Extensions
+
+| Type                                | Extensions                                                                                                           |
 | :---------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
-| **Estándar**                        | `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`, `.tif`, `.webp`                                                    |
-| **Alta Eficiencia (Apple/General)** | `.heic`, `.heif` (Formatos modernos de alta compresión).                                                             |
-| **Profesional / RAW**               | `.dng`, `.cr2`, `.cr3` (Canon), `.nef` (Nikon), **`.arw` (Sony)**, `.raf` (Fuji), `.orf` (Olympus), `.pef` (Pentax). |
+| **Standard**                        | `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`, `.tif`, `.webp`                                                    |
+| **High Efficiency (Apple/General)** | `.heic`, `.heif` (Modern high-compression formats).                                                                  |
+| **Professional / RAW**              | `.dng`, `.cr2`, `.cr3` (Canon), `.nef` (Nikon), **`.arw` (Sony)**, `.raf` (Fuji), `.orf` (Olympus), `.pef` (Pentax). |
 
-### B. Extensiones de Video Comunes
+### B. Common Video Extensions
 
-| Tipo                       | Extensiones                                                                                                            |
-| :------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| **Estándar**               | `.mp4`, `.mov` (Nativo de Apple), `.avi`, `.mkv`, `.wmv` (Windows).                                                    |
-| **Alta Eficiencia (HEVC)** | Los archivos de video de alta eficiencia suelen utilizar el contenedor **`.mp4`** o **`.mov`** con códec H.265 (HEVC). |
+| Type                       | Extensions                                                                                           |
+| :------------------------- | :--------------------------------------------------------------------------------------------------- |
+| **Standard**               | `.mp4`, `.mov` (Apple native), `.avi`, `.mkv`, `.wmv` (Windows).                                     |
+| **High Efficiency (HEVC)** | High-efficiency video files usually use **`.mp4`** or **`.mov`** containers with H.265 (HEVC) codec. |
 
-### C. Archivos Auxiliares (Sidecar)
+### C. Auxiliary Files (Sidecar)
 
-Estos archivos contienen metadatos de edición o información de soporte y deben **moverse junto con su archivo principal** (ej: mover `foto.heic` y `foto.aae` a la misma carpeta de destino).
+These files contain editing metadata or support info and must be **moved along with their main file** (e.g., move `photo.heic` and `photo.aae` to the same destination folder).
 
-- **`.aae`**: Archivos de edición de fotos de Apple (iPhone/iPad).
-- **`.xmp`**: Metadatos de edición general (Adobe, usados en RAW).
-- **`.thm`**: Archivos de miniaturas asociados a videos de cámaras.
-
----
-
-## 💎 Manejo de Duplicados (Validación por HASH)
-
-Para garantizar que solo se gestionan duplicados verdaderos (mismo contenido, independientemente del nombre del archivo o la fecha de modificación), se aplicará la comprobación de integridad mediante **algoritmos de _hashing_**.
-
-### Flujo de Comprobación
-
-1.  **Cálculo de HASH:** Al encontrar un archivo en la **Ruta de Entrada** (`Origen`) que tiene el **mismo nombre** que un archivo ya existente en la **Ruta de Salida** (`Destino`), la aplicación debe calcular el **HASH criptográfico** (ej. SHA-256) de ambos archivos.
-2.  **Verificación:**
-    - Si **HASH(Origen) == HASH(Destino)**: El archivo es un duplicado exacto.
-    - Si **HASH(Origen) != HASH(Destino)**: Los archivos son diferentes (aunque tengan el mismo nombre) y se debe renombrar el archivo de origen (ej. añadir un sufijo `_dup_1`).
-3.  **Acciones para Duplicados Exactos (HASH Coincidente):**
-
-En la versión actual (`v1.0`), la aplicación prioriza la **automatización desatendida** para no interrumpir procesos largos:
-
-- **Duplicados Exactos (Hash Idéntico):** Se aplica la acción **OMITIR**. El archivo de origen se preserva y no se mueve.
-- **Colisión de Nombre (Hash Diferente):** Se aplica **RENOMBRADO AUTOMÁTICO** (`archivo_dup_N.ext`).
-- **Eliminar Original:** Por seguridad, nunca se borran originales automáticamente en esta versión.
-
-## 🌟 Nuevas Características (v1.1)
-
-### 🧪 Modo Simulación (Dry Run)
-
-Activa la casilla **"Modo Simulación"** para ejecutar todo el análisis sin mover un solo archivo.
-
-- Verifica qué pasaría.
-- Genera logs completos.
-- Perfecto para ganar confianza antes de ordenar.
-
-### 📝 Logs Persistentes y Visor
-
-- **Historial:** Cada ejecución genera un archivo `operaciones_FECHA.log` en la carpeta destino.
-- **Botón "Abrir Log":** Al finalizar, pulsa este botón para ver el reporte inmediato sin buscar el archivo manualmente.
+- **`.aae`**: Apple photo editing files (iPhone/iPad).
+- **`.xmp`**: General editing metadata (Adobe, used in RAW).
+- **`.thm`**: Thumbnail files associated with camera videos.
 
 ---
 
-Este esquema de manejo de duplicados por HASH es muy robusto.
+## 💎 Duplicate Handling (HASH Validation)
 
-Como esta aplicación involucra mover y manipular archivos de iPhone, puede ser útil ver cómo otros usuarios gestionan la transferencia de estos archivos. Aquí tienes un video que explica cómo trabajar con archivos HEIC en Windows.
+To ensure only true duplicates (same content) are managed, integrity checking via **hashing algorithms** is applied.
 
-[Convertir HEIC a JPG en Windows | Archivos AAE | Configurar celular (BONUS)](https://www.youtube.com/watch?v=pdDEHuntbeA)
+### Check Flow
 
-Este video es relevante porque aborda directamente el manejo de formatos específicos de iPhone (HEIC y AAE), los cuales se incluyen en tu lista de extensiones.
+1.  **HASH Calculation:** When finding a file in the **Input Path** (`Source`) that has the **same name** as an existing file in the **Output Path** (`Destination`), the application calculates the **cryptographic HASH** (e.g., SHA-256) of both files.
+2.  **Verification:**
+    - If **HASH(Source) == HASH(Destination)**: The file is an exact duplicate.
+    - If **HASH(Source) != HASH(Destination)**: Files are different (despite same name), and the source file must be renamed (e.g., add suffix `_dup_1`).
+3.  **Actions for Exact Duplicates (Matching HASH):**
 
-http://googleusercontent.com/youtube_content/2
+In the current version (`v1.0+`), the application prioritizes safety:
+
+- **Exact Duplicates (Identical Hash):** The file is moved to a special folder `_DUPLICADOS_REVISAR` (Duplicates to Review) in the destination.
+- **Name Collision (Different Hash):** **AUTOMATIC RENAMING** applies (`file_dup_N.ext`).
+- **Delete Original:** For safety, originals are never automatically deleted without validation.
+
+## 🌟 New Features
+
+### 🧪 Simulation Mode (Dry Run)
+
+Check the **"Modo Simulación"** (Simulation Mode) box to run the analysis without moving a single file.
+
+- Verify what would happen.
+- Generate full logs.
+- Perfect for gaining confidence before organizing.
+
+### 📝 Persistent Logs and Viewer
+
+- **History:** Each run generates an `operaciones_DATE.log` file in the destination folder.
+- **"Open Log" Button:** Upon completion, press this button to view the immediate report without manually searching for the file.
 
 ---
 
-## 🚀 Compilación y Ejecución
+## 🚀 Compilation and Execution
 
-Si deseas generar tu propio ejecutable `.exe` a partir del código fuente (por ejemplo, tras modificar algo), se incluye un script automatizado para Windows.
+If you wish to generate your own `.exe` from source code, an automated Windows script is included.
 
-### Requisitos Previos
+### Prerequisites
 
-- Tener **Python 3.x** instalado y agregado al PATH.
-- (Opcional) Un entorno virtual activo, aunque el script gestionará dependencias.
+- Have **Python 3.x** installed and added to PATH.
+- (Optional) An active virtual environment, though the script handles dependencies.
 
-### Pasos para Compilar
+### Compilation Steps
 
-1.  Abre la carpeta del proyecto.
-2.  Haz doble clic en el archivo **`build_executable.bat`**.
-3.  El script instalará automáticamente las dependencias necesarias (`Pillow`, `ttkbootstrap`, `pyinstaller`, etc.).
-4.  Al finalizar, encontrarás el nuevo ejecutable en la carpeta **`dist/OrdenaFotos_Pro.exe`**.
+1.  Open the project folder.
+2.  Double click on **`build_executable.bat`**.
+3.  The script will automatically install necessary dependencies (`Pillow`, `ttkbootstrap`, `pyinstaller`, etc.).
+4.  Upon completion, you will find the new executable in **`dist/OrdenaFotos_Pro.exe`**.
 
-### Ejecución
+### Execution
 
-Simplemente abre el archivo `.exe` generado.
+Simply open the generated `.exe` file.
 
-> [!WARNING] > **¿Windows bloquea la ejecución?**
-> Al no estar firmado digitalmente (costoso), Windows Defender puede mostrar "Windows protegió su PC".
+> [!WARNING] > **Windows blocks execution?**
+> Since it's not digitally signed (expensive), Windows Defender may show "Windows protected your PC".
 >
-> 1. Haz clic en **"Más información"**.
-> 2. Pulsa el botón **"Ejecutar de todas formas"**.
+> 1. Click **"More info"**.
+> 2. Click **"Run anyway"**.
 >
-> **Alternativa (Desbloqueo Permanente):**
+> **Alternative (Permanent Unblock):**
 >
-> 1. Clic derecho en el `.exe` > Propiedades.
-> 2. Marca la casilla **"Desbloquear"** (Unblock) abajo a la derecha.
-> 3. Aplicar y Aceptar.
+> 1. Right-click the `.exe` > Properties.
+> 2. Check the **"Unblock"** box at the bottom right.
+> 3. Apply and OK.
 
 ---
 
-## 🛡️ Fiabilidad y Pruebas Realizadas
+## 🛡️ Reliability and Tests
 
-# 📂 Utilidad de Organización Multimedia Local
+This application has undergone a battery of automated tests to guarantee file safety.
 
-## 🎯 Objetivo del Proyecto
+### ✅ Test Coverage
 
-Crear una aplicación de escritorio local, sencilla y robusta, diseñada para automatizar la organización de archivos multimedia (fotos y videos) desde una ruta de origen a una ruta de destino. El criterio de ordenamiento es la **fecha de creación/captura** de los archivos, garantizando la **integridad de los datos** durante el proceso de movimiento y manteniendo limpia la ruta de origen.
+1. **Data Integrity:** Verified that `SHA-256` calculation detects 1-byte differences and exact matches.
+2. **Date Priority:** Verified correct fallback: _EXIF > Creation > Modification_.
 
-**Ejemplo de Organización:**
+### 3. Duplicate Management 👯
 
-- **Ruta de Entrada:** `H:\DCIM\12312\`
-- **Ruta de Salida:** `C:\fotos\`
-- **Estructura Final:**
-  ```
-  C:\fotos\
-  ├── 2019\
-  │   ├── enero\
-  │   └── febrero\
-  └── 2020\
-      └── marzo\
-  ```
+- **Name Collision (Different Content):** If file exists but is different, it is automatically renamed (e.g., `photo_dup_1.jpg`) and saved alongside the original.
+- **Exact Duplicate (Same Content):** If file exists and is identical (SHA-256 verified), the new file is **MOVED** to a special folder named `_DUPLICADOS_REVISAR` within the destination.
+  - This allows you to manually review and delete duplicates without fear of losing anything.
+  - Nothing is automatically overwritten.
 
-## 🛠️ Stack Tecnológico Recomendado
-
-El proyecto se desarrollará utilizando **Python 3.x** debido a su simplicidad, madurez en el manejo del sistema de archivos y las potentes librerías disponibles para la extracción de metadatos.
-
-| Componente                  | Módulo/Librería         | Finalidad Específica                                                  |
-| :-------------------------- | :---------------------- | :-------------------------------------------------------------------- |
-| **Lenguaje Base**           | Python 3.x              | Implementación de toda la lógica.                                     |
-| **Manejo de Archivos**      | `pathlib`, `shutil`     | Búsqueda recursiva, creación de directorios y movimiento de archivos. |
-| **Extracción de Metadatos** | `Pillow` (o `ExifRead`) | Lectura de datos EXIF para determinar la fecha de captura de fotos.   |
-| **Interfaz (Opcional)**     | Tkinter / Flet          | Interfaz de usuario para la selección de rutas.                       |
-
----
-
-## 🔑 Lógica Funcional Clave
-
-### 1. Extracción y Priorización de Fechas (EXIF)
-
-Para asegurar la **fecha más coherente** y ordenar correctamente los archivos, se aplicará la siguiente lógica de priorización:
-
-1.  **Prioridad 1 (Metadata):** Intentar extraer la fecha de captura/creación del archivo a partir de los metadatos **EXIF** (para fotos) o tags de video.
-2.  **Prioridad 2 (Sistema de Archivos - Creación):** Si no hay metadatos internos válidos, utilizar la **fecha de creación** del archivo registrada por el sistema operativo.
-3.  **Prioridad 3 (Sistema de Archivos - Modificación):** Si las fechas anteriores no son accesibles o coherentes (por ejemplo, en sistemas donde la fecha de creación se pierde), se utilizará la **fecha de última modificación**.
-
-La fecha resultante se utilizará para construir la estructura de carpetas `Año/Nombre del Mes`.
-
-### 2. Movimiento Seguro y Validación de Archivos
-
-Para evitar la pérdida de datos, el proceso de transferencia debe ser **atómico** (o simularlo con validación estricta).
-
-- **Paso 1: Movimiento:** Utilizar `shutil.move()` para transferir el archivo de la ruta de origen a la ruta de destino (`RutaSalida\Año\Mes\Archivo.ext`).
-- **Paso 2: Validación de Existencia:** Comprobar inmediatamente que el archivo se encuentra en la **ruta de destino**.
-- **Paso 3: Validación de Integridad:** Verificar que el **tamaño del archivo** en la ruta de destino **coincide exactamente** con el tamaño del archivo original.
-- **Paso 4: Confirmación:** **Solo si la existencia y la integridad (tamaño) están validadas**, se considera que el proceso ha finalizado correctamente. Si la validación falla, se debe registrar un error y mantener el archivo en la ruta de origen.
-
-### 3. Lógica de Limpieza de Carpetas Vacías
-
-Una vez que todos los archivos han sido procesados y movidos, se ejecutará un proceso de limpieza en la ruta de entrada para eliminar cualquier rastro innecesario.
-
-- **Barrido Recursivo Inverso:** Recorrer recursivamente todas las carpetas y subcarpetas de la **ruta de entrada**, comenzando por los directorios más profundos.
-- **Comprobación de Vacío:** Utilizar `os.listdir()` para verificar si la carpeta está completamente vacía (sin archivos ni subcarpetas).
-- **Eliminación:** Si la carpeta está vacía, se elimina (`os.rmdir()`). Este proceso garantiza que solo las estructuras de carpetas vacías sean removidas, dejando la ruta de origen organizada y limpia.
-
----
-
-## 💾 Soporte de Archivos Multimedia (Imágenes y Video)
-
-La aplicación debe ser capaz de identificar y procesar una lista exhaustiva de formatos de archivo comunes, RAW y auxiliares (Sidecar) utilizados por fabricantes clave como Apple (iPhone) y Sony.
-
-### A. Extensiones de Imagen Comunes
-
-| Tipo                                | Extensiones                                                                                                          |
-| :---------------------------------- | :------------------------------------------------------------------------------------------------------------------- |
-| **Estándar**                        | `.jpg`, `.jpeg`, `.png`, `.gif`, `.bmp`, `.tiff`, `.tif`, `.webp`                                                    |
-| **Alta Eficiencia (Apple/General)** | `.heic`, `.heif` (Formatos modernos de alta compresión).                                                             |
-| **Profesional / RAW**               | `.dng`, `.cr2`, `.cr3` (Canon), `.nef` (Nikon), **`.arw` (Sony)**, `.raf` (Fuji), `.orf` (Olympus), `.pef` (Pentax). |
-
-### B. Extensiones de Video Comunes
-
-| Tipo                       | Extensiones                                                                                                            |
-| :------------------------- | :--------------------------------------------------------------------------------------------------------------------- |
-| **Estándar**               | `.mp4`, `.mov` (Nativo de Apple), `.avi`, `.mkv`, `.wmv` (Windows).                                                    |
-| **Alta Eficiencia (HEVC)** | Los archivos de video de alta eficiencia suelen utilizar el contenedor **`.mp4`** o **`.mov`** con códec H.265 (HEVC). |
-
-### C. Archivos Auxiliares (Sidecar)
-
-Estos archivos contienen metadatos de edición o información de soporte y deben **moverse junto con su archivo principal** (ej: mover `foto.heic` y `foto.aae` a la misma carpeta de destino).
-
-- **`.aae`**: Archivos de edición de fotos de Apple (iPhone/iPad).
-- **`.xmp`**: Metadatos de edición general (Adobe, usados en RAW).
-- **`.thm`**: Archivos de miniaturas asociados a videos de cámaras.
-
----
-
-## 💎 Manejo de Duplicados (Validación por HASH)
-
-Para garantizar que solo se gestionan duplicados verdaderos (mismo contenido, independientemente del nombre del archivo o la fecha de modificación), se aplicará la comprobación de integridad mediante **algoritmos de _hashing_**.
-
-### Flujo de Comprobación
-
-1.  **Cálculo de HASH:** Al encontrar un archivo en la **Ruta de Entrada** (`Origen`) que tiene el **mismo nombre** que un archivo ya existente en la **Ruta de Salida** (`Destino`), la aplicación debe calcular el **HASH criptográfico** (ej. SHA-256) de ambos archivos.
-2.  **Verificación:**
-    - Si **HASH(Origen) == HASH(Destino)**: El archivo es un duplicado exacto.
-    - Si **HASH(Origen) != HASH(Destino)**: Los archivos son diferentes (aunque tengan el mismo nombre) y se debe renombrar el archivo de origen (ej. añadir un sufijo `_dup_1`).
-3.  **Acciones para Duplicados Exactos (HASH Coincidente):**
-
-En la versión actual (`v1.0`), la aplicación prioriza la **automatización desatendida** para no interrumpir procesos largos:
-
-- **Duplicados Exactos (Hash Idéntico):** Se aplica la acción **OMITIR**. El archivo de origen se preserva y no se mueve.
-- **Colisión de Nombre (Hash Diferente):** Se aplica **RENOMBRADO AUTOMÁTICO** (`archivo_dup_N.ext`).
-- **Eliminar Original:** Por seguridad, nunca se borran originales automáticamente en esta versión.
-
-## 🌟 Nuevas Características (v1.1)
-
-### 🧪 Modo Simulación (Dry Run)
-
-Activa la casilla **"Modo Simulación"** para ejecutar todo el análisis sin mover un solo archivo.
-
-- Verifica qué pasaría.
-- Genera logs completos.
-- Perfecto para ganar confianza antes de ordenar.
-
-### 📝 Logs Persistentes y Visor
-
-- **Historial:** Cada ejecución genera un archivo `operaciones_FECHA.log` en la carpeta destino.
-- **Botón "Abrir Log":** Al finalizar, pulsa este botón para ver el reporte inmediato sin buscar el archivo manualmente.
-
----
-
-Este esquema de manejo de duplicados por HASH es muy robusto.
-
-Como esta aplicación involucra mover y manipular archivos de iPhone, puede ser útil ver cómo otros usuarios gestionan la transferencia de estos archivos. Aquí tienes un video que explica cómo trabajar con archivos HEIC en Windows.
-
-[Convertir HEIC a JPG en Windows | Archivos AAE | Configurar celular (BONUS)](https://www.youtube.com/watch?v=pdDEHuntbeA)
-
-Este video es relevante porque aborda directamente el manejo de formatos específicos de iPhone (HEIC y AAE), los cuales se incluyen en tu lista de extensiones.
-
-http://googleusercontent.com/youtube_content/2
-
----
-
-## 🚀 Compilación y Ejecución
-
-Si deseas generar tu propio ejecutable `.exe` a partir del código fuente (por ejemplo, tras modificar algo), se incluye un script automatizado para Windows.
-
-### Requisitos Previos
-
-- Tener **Python 3.x** instalado y agregado al PATH.
-- (Opcional) Un entorno virtual activo, aunque el script gestionará dependencias.
-
-### Pasos para Compilar
-
-1.  Abre la carpeta del proyecto.
-2.  Haz doble clic en el archivo **`build_executable.bat`**.
-3.  El script instalará automáticamente las dependencias necesarias (`Pillow`, `ttkbootstrap`, `pyinstaller`, etc.).
-4.  Al finalizar, encontrarás el nuevo ejecutable en la carpeta **`dist/OrdenaFotos_Pro.exe`**.
-
-### Ejecución
-
-Simplemente abre el archivo `.exe` generado.
-
-> [!WARNING] > **¿Windows bloquea la ejecución?**
-> Al no estar firmado digitalmente (costoso), Windows Defender puede mostrar "Windows protegió su PC".
->
-> 1. Haz clic en **"Más información"**.
-> 2. Pulsa el botón **"Ejecutar de todas formas"**.
->
-> **Alternativa (Desbloqueo Permanente):**
->
-> 1. Clic derecho en el `.exe` > Propiedades.
-> 2. Marca la casilla **"Desbloquear"** (Unblock) abajo a la derecha.
-> 3. Aplicar y Aceptar.
-
----
-
-## 🛡️ Fiabilidad y Pruebas Realizadas
-
-Esta aplicación ha sido sometida a una batería de tests automatizados para garantizar la seguridad de tus archivos.
-
-### ✅ Cobertura de Pruebas
-
-1. **Integridad de Datos:** Verificado que el cálculo de `SHA-256` detecta diferencias de 1 byte y coincidencias exactas.
-2. **Prioridad de Fechas:** Verificado el fallback correcto: _EXIF > Creación > Modificación_.
-
-### 3. Gestión de Duplicados 👯
-
-- **Colisión de Nombre (Contenido diferente):** Si el archivo existe pero es distinto, se renombra automáticamente (ej: `foto_dup_1.jpg`) y se guarda junto al original.
-- **Duplicado Exacto (Mismo contenido):** Si el archivo ya existe y es idéntico (verificado por Hash SHA-256), el nuevo archivo **SE MUEVE** a una carpeta especial llamada `_DUPLICADOS_REVISAR` dentro del destino.
-  - Esto te permite revisar y borrar manualmente los duplicados sin miedo a perder nada.
-  - Nunca se sobrescribe nada automáticamente.
-
-4. **Resiliencia a Bucles:**
-   - Detecta si el archivo origen y destino son la misma ruta física (Idempotencia) y lo omite.
-   - Detiene bucles infinitos si la carpeta destino está dentro del origen.
-5. **No Destructivo:** Confirmado que NUNCA se borra el origen sin antes validar la existencia y tamaño byte-a-byte en el destino.
+4. **Loop Resilience:**
+   - Detects if source and destination are the same physical path (Idempotency) and skips it.
+   - Stops infinite loops if destination folder is inside source.
+5. **Non-Destructive:** Confirmed that source is NEVER deleted without first validating existence and byte-to-byte size in destination.
 
 # OrdenaFotos
