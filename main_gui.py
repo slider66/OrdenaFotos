@@ -23,7 +23,7 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         self.resizable(False, False)
         
         # Estilo para botones TK estándar
-        self.style = ttk.Style()
+        # Estilo para botones TK estándar
         self.style.configure('TButton', font=('Segoe UI', 9, 'bold'), padding=(10, 10))
 
         # --- Variables (Organizador) ---
