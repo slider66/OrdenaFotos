@@ -72,7 +72,7 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
 
         # --- SECCIÓN 1: Selección de Rutas ---
         lbl_frame = ttk.LabelFrame(container, text=" Configuración de Rutas ", padding=10)
-        lbl_frame.pack(fill=tk.X, pady_bottom=10)
+        lbl_frame.pack(fill=tk.X, pady=(0, 10))
 
         # Origen
         ttk.Label(lbl_frame, text="Origen (Fotos desordenadas):").pack(anchor=tk.W)
@@ -134,7 +134,7 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
 
         # Selección de Carpeta Única
         lbl_frame = ttk.LabelFrame(container, text=" Carpeta a Analizar ", padding=10)
-        lbl_frame.pack(fill=tk.X, pady_bottom=20)
+        lbl_frame.pack(fill=tk.X, pady=(0, 20))
 
         row = ttk.Frame(lbl_frame)
         row.pack(fill=tk.X)
