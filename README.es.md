@@ -4,7 +4,10 @@
 
 ## 🎯 Objetivo del Proyecto
 
-Crear una aplicación de escritorio local, sencilla y robusta, diseñada para automatizar la organización de archivos multimedia (fotos y videos) desde una ruta de origen a una ruta de destino. El criterio de ordenamiento es la **fecha de creación/captura** de los archivos, garantizando la **integridad de los datos** durante el proceso de movimiento y manteniendo limpia la ruta de origen.
+Crear una aplicación de escritorio local, sencilla y robusta, diseñada para automatizar la organización de archivos multimedia. Incluye dos herramientas principales:
+
+1.  **Organizador Multimedia:** Mueve fotos/videos a carpetas por Fecha (Año/Mes).
+2.  **Buscador de Duplicados (Nuevo en v2.0):** Escanea una carpeta, detecta archivos idénticos y los aísla para limpieza.
 
 **Ejemplo de Organización:**
 
@@ -125,6 +128,17 @@ Activa la casilla **"Modo Simulación"** para ejecutar todo el análisis sin mov
 
 - **Historial:** Cada ejecución genera un archivo `operaciones_FECHA.log` en la carpeta destino.
 - **Botón "Abrir Log":** Al finalizar, pulsa este botón para ver el reporte inmediato sin buscar el archivo manualmente.
+
+## 🕵️ Buscador de Duplicados (v2.0)
+
+Nueva pestaña dedicada exclusivamente a la limpieza profunda.
+
+1.  **Selecciona una carpeta** (ej: un disco duro externo).
+2.  **El programa escanea** todo el contenido buscando archivos idénticos byte a byte (SHA-256).
+3.  **Acción Automática:**
+    - Mantiene **un** original (la ruta más corta).
+    - Mueve **todas** las copias sobrantes a una carpeta `_DUPLICADOS` en la raíz de análisis.
+4.  **Resultado:** Puedes entrar a `_DUPLICADOS` y borrar todo con confianza, sabiendo que tienes una copia segura en su lugar original.
 
 ---
 

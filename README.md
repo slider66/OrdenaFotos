@@ -123,8 +123,21 @@ Check the **"Modo Simulación"** (Simulation Mode) box to run the analysis witho
 
 ### 📝 Persistent Logs and Viewer
 
+### 📝 Persistent Logs and Viewer
+
 - **History:** Each run generates an `operaciones_DATE.log` file in the destination folder.
 - **"Open Log" Button:** Upon completion, press this button to view the immediate report without manually searching for the file.
+
+## 🕵️ Duplicate Finder (v2.0)
+
+A new tab dedicated exclusively to deep cleaning.
+
+1.  **Select a folder** (e.g., an external hard drive).
+2.  **The program scans** all content looking for byte-for-byte identical files (SHA-256).
+3.  **Automatic Action:**
+    - Keeps **one** original (shortest path).
+    - Moves **all** excess copies to a `_DUPLICADOS` folder in the analysis root.
+4.  **Result:** You can safely delete the contents of `_DUPLICADOS` knowing a safe copy exists in its original place.
 
 ---
 
