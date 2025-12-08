@@ -12,10 +12,14 @@ from src.cleaner import clean_empty_directories
 
 class OrganizerApp(ttk.Window):
     def __init__(self):
-        super().__init__(themename="superhero") # Tema moderno oscuro
+        super().__init__(themename="darkly") # Cambio a 'darkly' para mayor contraste/estabilidad
         self.title("Organizador Multimedia Pro")
         self.geometry("700x550")
         self.resizable(False, False)
+        
+        # Estilo personalizado para asegurar fuente
+        style = ttk.Style()
+        style.configure('TButton', font=('Segoe UI', 9, 'bold'))
 
         # Variables de estado
         self.source_path = tk.StringVar()
@@ -43,13 +47,13 @@ class OrganizerApp(ttk.Window):
         ttk.Label(rutas_frame, text="Carpeta Origen (Cámara/Teléfono):", font=("Helvetica", 10)).grid(row=0, column=0, sticky="w", pady=(0,5))
         src_entry = ttk.Entry(rutas_frame, textvariable=self.source_path, width=45)
         src_entry.grid(row=1, column=0, padx=(0, 10), pady=(0, 15))
-        ttk.Button(rutas_frame, text="📂 Buscar", command=self.select_source, bootstyle="secondary-outline").grid(row=1, column=1, pady=(0, 15))
+        ttk.Button(rutas_frame, text="Buscar", command=self.select_source, bootstyle="secondary-outline").grid(row=1, column=1, pady=(0, 15))
 
         # Destino
         ttk.Label(rutas_frame, text="Carpeta Destino (Biblioteca Organizada):", font=("Helvetica", 10)).grid(row=2, column=0, sticky="w", pady=(0,5))
         dst_entry = ttk.Entry(rutas_frame, textvariable=self.dest_path, width=45)
         dst_entry.grid(row=3, column=0, padx=(0, 10))
-        ttk.Button(rutas_frame, text="📂 Buscar", command=self.select_dest, bootstyle="secondary-outline").grid(row=3, column=1)
+        ttk.Button(rutas_frame, text="Buscar", command=self.select_dest, bootstyle="secondary-outline").grid(row=3, column=1)
         
         # Checkbox Simulación
         chk_dry = ttk.Checkbutton(rutas_frame, text="Modo Simulación (No mover archivos)", variable=self.dry_run, bootstyle="warning-round-toggle")
@@ -74,13 +78,13 @@ class OrganizerApp(ttk.Window):
         btn_frame = ttk.Frame(main_container)
         btn_frame.pack(fill=X)
 
-        self.btn_start = ttk.Button(btn_frame, text="⚡ INICIAR ORGANIZACIÓN", command=self.start_process, bootstyle="success", width=25)
+        self.btn_start = ttk.Button(btn_frame, text="INICIAR ORGANIZACIÓN", command=self.start_process, bootstyle="success", width=25)
         self.btn_start.pack(side=RIGHT, padx=5)
 
-        self.btn_stop = ttk.Button(btn_frame, text="🛑 Detener", command=self.stop_process, state='disabled', bootstyle="danger")
+        self.btn_stop = ttk.Button(btn_frame, text="DETENER", command=self.stop_process, state='disabled', bootstyle="danger")
         self.btn_stop.pack(side=RIGHT, padx=5)
 
-        self.btn_open_log = ttk.Button(btn_frame, text="📄 Abrir Log", command=self.open_last_log, state='disabled', bootstyle="info")
+        self.btn_open_log = ttk.Button(btn_frame, text="ABRIR LOG", command=self.open_last_log, state='disabled', bootstyle="info")
         self.btn_open_log.pack(side=LEFT, padx=5)
 
         # Footer
