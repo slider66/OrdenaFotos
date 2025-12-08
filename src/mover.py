@@ -59,19 +59,42 @@ def move_media_safe(media_group: MediaGroup, base_dest_path: Path, duplicate_act
             is_exact_dup = check_duplicate(media_group.main_file, target_main_path)
             
             if is_exact_dup:
-                if duplicate_action == 'ask':
-                    return OperationResult(STATUS_DUPLICATE, "Duplicado exacto detectado", destination=target_main_path)
-                elif duplicate_action == 'skip':
-                    return OperationResult(STATUS_SKIPPED, "Omitido por duplicado exacto")
-                elif duplicate_action == 'delete_original':
-                    if not dry_run: _safe_delete_group(media_group)
-                    return OperationResult(STATUS_SUCCESS, "Original eliminado (duplicado) [DRY RUN]" if dry_run else "Original eliminado (duplicado)")
-                elif duplicate_action == 'overwrite':
-                    if not dry_run:
-                        os.remove(target_main_path)
-                        for s in media_group.sidecars:
-                             s_t = target_dir / s.name
-                             if s_t.exists(): os.remove(s_t)
+                # ---------------------------------------------------------
+                # NUEVA LÓGICA: Mover a carpeta de Revisión de Duplicados
+                # ---------------------------------------------------------
+                if dry_run:
+                    return OperationResult(STATUS_SKIPPED, "[SIMULACION] Se movería a carpeta _DUPLICADOS_REVISAR")
+
+                dup_dir = base_dest_path / "_DUPLICADOS_REVISAR"
+                dup_dir.mkdir(parents=True, exist_ok=True)
+
+                # Calcular ruta en carpeta duplicados (manejando colisiones internas)
+                dup_final_path = dup_dir / media_group.main_file.name
+                
+                # Si ya existe un archivo con ese nombre en duplicados, renombramos
+                stem = media_group.main_file.stem
+                suffix = media_group.main_file.suffix
+                counter = 1
+                while dup_final_path.exists():
+                    dup_final_path = dup_dir / f"{stem}_dup_{counter}{suffix}"
+                    counter += 1
+
+                # Mover el grupo (Main + Sidecars) a la carpeta de duplicados
+                # Usamos la misma lógica segura: Copiar -> Validar -> Borrar
+                try:
+                    _copy_validate_delete(media_group.main_file, dup_final_path)
+                    
+                    # Mover sidecars también a la carpeta duplicados
+                    new_dup_stem = dup_final_path.stem
+                    for sidecar in media_group.sidecars:
+                        dup_sidecar_path = dup_dir / f"{new_dup_stem}{sidecar.suffix}"
+                        if dup_sidecar_path.exists(): os.remove(dup_sidecar_path) # Overwrite trash sidecars
+                        _copy_validate_delete(sidecar, dup_sidecar_path)
+
+                    return OperationResult(STATUS_DUPLICATE, f"Duplicado exacto. Movido a: {dup_final_path.name}", destination=dup_final_path)
+                except Exception as e:
+                    return OperationResult(STATUS_ERROR, f"Error moviendo a duplicados: {str(e)}")
+
             else:
                 # Falso duplicado -> Renombrar
                 stem = media_group.main_file.stem
