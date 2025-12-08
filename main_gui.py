@@ -17,10 +17,6 @@ class OrganizerApp(ttk.Window):
         self.geometry("700x550")
         self.resizable(False, False)
         
-        # Estilo personalizado para asegurar fuente y alto mínimo
-        style = ttk.Style()
-        style.configure('TButton', font=('Segoe UI', 9, 'bold'), padding=(10, 10))
-
         # Variables de estado
         self.source_path = tk.StringVar()
         self.dest_path = tk.StringVar()
@@ -74,17 +70,26 @@ class OrganizerApp(ttk.Window):
         self.progress_bar = ttk.Progressbar(main_container, mode='indeterminate', bootstyle="success-striped")
         self.progress_bar.pack(fill=X, pady=(0, 15))
 
-        # --- SECCIÓN 3: Botones de Acción ---
+        # --- SECCIÓN 3: Botones de Acción (Standard TK para asegurar visibilidad) ---
         btn_frame = ttk.Frame(main_container)
         btn_frame.pack(fill=X)
 
-        self.btn_start = ttk.Button(btn_frame, text="INICIAR ORGANIZACIÓN", command=self.start_process, bootstyle="success", width=25)
+        # Colores del tema Darkly aproximados para mantener consistencia
+        # Success: #00bc8c, Danger: #e74c3c, Info: #3498db, Tkinter BG default por defecto
+        
+        self.btn_start = tk.Button(btn_frame, text="INICIAR ORGANIZACIÓN", command=self.start_process, 
+                                   bg="#00bc8c", fg="white", font=("Segoe UI", 10, "bold"), 
+                                   height=2, width=25, relief="flat", cursor="hand2")
         self.btn_start.pack(side=RIGHT, padx=5)
 
-        self.btn_stop = ttk.Button(btn_frame, text="DETENER", command=self.stop_process, state='disabled', bootstyle="danger")
+        self.btn_stop = tk.Button(btn_frame, text="DETENER", command=self.stop_process, state='disabled',
+                                  bg="#e74c3c", fg="white", font=("Segoe UI", 10, "bold"),
+                                  height=2, width=15, relief="flat", cursor="hand2")
         self.btn_stop.pack(side=RIGHT, padx=5)
 
-        self.btn_open_log = ttk.Button(btn_frame, text="ABRIR LOG", command=self.open_last_log, state='disabled', bootstyle="info")
+        self.btn_open_log = tk.Button(btn_frame, text="ABRIR LOG", command=self.open_last_log, state='disabled',
+                                      bg="#3498db", fg="white", font=("Segoe UI", 10, "bold"),
+                                      height=2, width=15, relief="flat", cursor="hand2")
         self.btn_open_log.pack(side=LEFT, padx=5)
 
         # Footer
