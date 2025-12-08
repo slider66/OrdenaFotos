@@ -16,6 +16,7 @@ echo.
 echo 3. Generando ejecutable con PyInstaller...
 echo    (Esto puede tardar unos minutos)
 python -m PyInstaller --noconsole --onefile --name="OrdenaFotos_Pro" --clean ^
+    --version-file="version_info.txt" ^
     --hidden-import=PIL ^
     --hidden-import=PIL._tkinter_finder ^
     --icon=NONE ^

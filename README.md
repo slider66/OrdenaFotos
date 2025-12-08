@@ -156,7 +156,19 @@ Si deseas generar tu propio ejecutable `.exe` a partir del código fuente (por e
 
 ### Ejecución
 
-Simplemente abre el archivo `.exe` generado. No requiere instalación ni tener Python en la máquina donde se vaya a usar.
+Simplemente abre el archivo `.exe` generado.
+
+> [!WARNING] > **¿Windows bloquea la ejecución?**
+> Al no estar firmado digitalmente (costoso), Windows Defender puede mostrar "Windows protegió su PC".
+>
+> 1. Haz clic en **"Más información"**.
+> 2. Pulsa el botón **"Ejecutar de todas formas"**.
+>
+> **Alternativa (Desbloqueo Permanente):**
+>
+> 1. Clic derecho en el `.exe` > Propiedades.
+> 2. Marca la casilla **"Desbloquear"** (Unblock) abajo a la derecha.
+> 3. Aplicar y Aceptar.
 
 ---
 
