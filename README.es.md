@@ -23,6 +23,65 @@ Crear una aplicación de escritorio local, sencilla y robusta, diseñada para au
       └── marzo\
   ```
 
+---
+
+## 🚀 Inicio Rápido
+
+### Para Usuarios (Ejecutable Precompilado)
+
+1. Descarga el último `.exe` desde [Releases](https://github.com/slider66/OrdenaFotos/releases)
+2. Ejecuta `OrdenaFotos_Pro.exe`
+3. Selecciona carpetas de origen y destino
+4. Click en "INICIAR ORGANIZACIÓN"
+
+> [!NOTE]
+> Windows puede mostrar una advertencia de seguridad ya que la app no está firmada digitalmente. Haz clic en **"Más información"** → **"Ejecutar de todas formas"** para continuar.
+
+### Para Desarrolladores (Compilar desde Código)
+
+**Requisitos Previos:**
+
+- **Python 3.10+** instalado y añadido al PATH
+- **Git** (para clonar el repositorio)
+
+**Pasos:**
+
+1. **Clonar el repositorio:**
+
+   ```bash
+   git clone https://github.com/slider66/OrdenaFotos.git
+   cd OrdenaFotos
+   ```
+
+2. **Instalar dependencias:**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+   Dependencias instaladas:
+
+   - `Pillow` - Procesamiento de imágenes y lectura EXIF
+   - `ExifRead` - Extracción adicional de metadatos EXIF
+   - `ttkbootstrap` - Tema moderno para UI
+   - `pyinstaller` - Compilación del ejecutable
+
+3. **Ejecutar la aplicación:**
+
+   ```bash
+   python main_gui.py
+   ```
+
+4. **Compilar ejecutable (Opcional):**
+
+   ```bash
+   build_executable.bat
+   ```
+
+   El `.exe` compilado estará en `dist/OrdenaFotos_Pro.exe`
+
+---
+
 ## 🛠️ Stack Tecnológico Recomendado
 
 El proyecto se desarrollará utilizando **Python 3.x** debido a su simplicidad, madurez en el manejo del sistema de archivos y las potentes librerías disponibles para la extracción de metadatos.

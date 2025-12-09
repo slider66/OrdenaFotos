@@ -20,6 +20,65 @@ Create a simple and robust local desktop application designed to automate the or
       └── 03-March\
   ```
 
+---
+
+## 🚀 Quick Start
+
+### For Users (Pre-compiled Executable)
+
+1. Download the latest `.exe` from [Releases](https://github.com/slider66/OrdenaFotos/releases)
+2. Run `OrdenaFotos_Pro.exe`
+3. Select source and destination folders
+4. Click "INICIAR ORGANIZACIÓN"
+
+> [!NOTE]
+> Windows may show a security warning since the app is not digitally signed. Click **"More info"** → **"Run anyway"** to proceed.
+
+### For Developers (Build from Source)
+
+**Prerequisites:**
+
+- **Python 3.10+** installed and added to PATH
+- **Git** (to clone the repository)
+
+**Steps:**
+
+1. **Clone the repository:**
+
+   ```bash
+   git clone https://github.com/slider66/OrdenaFotos.git
+   cd OrdenaFotos
+   ```
+
+2. **Install dependencies:**
+
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+   Dependencies installed:
+
+   - `Pillow` - Image processing and EXIF reading
+   - `ExifRead` - Additional EXIF metadata extraction
+   - `ttkbootstrap` - Modern UI theme
+   - `pyinstaller` - Executable compilation
+
+3. **Run the application:**
+
+   ```bash
+   python main_gui.py
+   ```
+
+4. **Build executable (Optional):**
+
+   ```bash
+   build_executable.bat
+   ```
+
+   The compiled `.exe` will be in `dist/OrdenaFotos_Pro.exe`
+
+---
+
 ## 🛠️ Recommended Tech Stack
 
 The project relies on **Python 3.x** due to its simplicity, maturity in file system handling, and powerful libraries available for metadata extraction.
