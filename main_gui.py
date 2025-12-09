@@ -5,6 +5,7 @@ import queue
 import webbrowser
 import os
 import subprocess
+import json
 from pathlib import Path
 import ttkbootstrap as tb # Import as tb to avoid conflict
 from ttkbootstrap import Style
@@ -32,6 +33,11 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         self.dry_run = tk.BooleanVar(value=False)
         self.is_running = False
         self.last_log_file = None
+        
+        # --- Variables (Exclusión de Carpetas) ---
+        self.excluded_folders = []  # Lista de rutas excluidas
+        self.persist_exclusions = tk.BooleanVar(value=False)
+        self.config_file = Path("excluded_folders.json")
 
         # --- Variables (Duplicados) ---
         self.dup_target_path = tk.StringVar()
@@ -41,6 +47,7 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         self.log_queue = queue.Queue()
         
         self._build_ui()
+        self.load_excluded_folders()
         self.check_queue()
 
     def _build_ui(self):
@@ -61,7 +68,7 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         # Footer común
         footer_frame = ttk.Frame(self)
         footer_frame.pack(side='bottom', fill=tk.X, padx=10, pady=5)
-        ttk.Label(footer_frame, text="© 2024 OrdenaFotos Pro | v2.0", font=("Segoe UI", 8)).pack(side=tk.RIGHT)
+        ttk.Label(footer_frame, text="slider66 © 2025 OrdenaFotos Pro | v2.0", font=("Segoe UI", 8)).pack(side=tk.RIGHT)
         link = ttk.Label(footer_frame, text="Ayuda / Documentación", font=("Segoe UI", 8, "underline"), cursor="hand2")
         link.pack(side=tk.LEFT)
         link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/slider66/OrdenaFotos"))
@@ -87,6 +94,53 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         dest_row.pack(fill=tk.X, pady=5)
         ttk.Entry(dest_row, textvariable=self.dest_path).pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(0, 5))
         ttk.Button(dest_row, text="Examinar", command=self.browse_dest, bootstyle="secondary").pack(side=tk.RIGHT)
+        
+        # --- SECCIÓN: Carpetas Excluidas ---
+        exc_frame = ttk.LabelFrame(container, text=" Carpetas Excluidas del Escaneo ", padding=10)
+        exc_frame.pack(fill=tk.X, pady=(10, 0))
+        
+        # Checkbox para persistencia
+        persist_check = ttk.Checkbutton(
+            exc_frame, 
+            text="Guardar exclusiones entre sesiones",
+            variable=self.persist_exclusions,
+            command=self.on_persist_toggle,
+            bootstyle="round-toggle"
+        )
+        persist_check.pack(anchor=tk.W, pady=(0, 5))
+        
+        # Frame para listbox y botones
+        exc_content = ttk.Frame(exc_frame)
+        exc_content.pack(fill=tk.BOTH, expand=True)
+        
+        # Listbox con scrollbar
+        list_frame = ttk.Frame(exc_content)
+        list_frame.pack(side=tk.LEFT, fill=tk.BOTH, expand=True, padx=(0, 5))
+        
+        self.excluded_listbox = tk.Listbox(list_frame, height=4, selectmode=tk.EXTENDED, font=("Segoe UI", 9))
+        self.excluded_listbox.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        
+        exc_scrollbar = ttk.Scrollbar(list_frame, command=self.excluded_listbox.yview)
+        exc_scrollbar.pack(side=tk.RIGHT, fill='y')
+        self.excluded_listbox['yscrollcommand'] = exc_scrollbar.set
+        
+        # Botones
+        btn_container = ttk.Frame(exc_content)
+        btn_container.pack(side=tk.RIGHT, fill=tk.Y)
+        
+        ttk.Button(
+            btn_container,
+            text="➕ Añadir",
+            command=self.add_excluded_folder,
+            bootstyle="success"
+        ).pack(fill=tk.X, pady=2)
+        
+        ttk.Button(
+            btn_container,
+            text="➖ Eliminar",
+            command=self.remove_excluded_folders,
+            bootstyle="danger"
+        ).pack(fill=tk.X, pady=2)
 
         # --- SECCIÓN 2: Opciones y Progreso ---
         opts_frame = ttk.Frame(container)
@@ -255,7 +309,7 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
                 total_processed = 0
                 errors = 0
                 
-                for media_group in scan_directory(Path(src_path)):
+                for media_group in scan_directory(Path(src_path), set(self.excluded_folders)):
                     if not self.is_running:
                         log_both(">>> PROCESO DETENIDO POR EL USUARIO <<<")
                         break
@@ -306,6 +360,76 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
                         p.rmdir()
                 except:
                     pass
+    
+    # --- Funciones de Exclusión de Carpetas ---
+    def load_excluded_folders(self):
+        """Carga las carpetas excluidas desde el archivo JSON si existe y está habilitado."""
+        if not self.config_file.exists():
+            return
+        
+        try:
+            with open(self.config_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            # Solo cargar si la persistencia estaba habilitada
+            if data.get('persist_exclusions', False):
+                self.persist_exclusions.set(True)
+                self.excluded_folders = data.get('excluded_folders', [])
+                self.update_excluded_listbox()
+        except Exception as e:
+            print(f"Error cargando exclusiones: {e}")
+    
+    def save_excluded_folders(self):
+        """Guarda las carpetas excluidas al archivo JSON si la persistencia está habilitada."""
+        if not self.persist_exclusions.get():
+            # Si no está habilitada la persistencia, eliminar el archivo si existe
+            if self.config_file.exists():
+                try:
+                    self.config_file.unlink()
+                except:
+                    pass
+            return
+        
+        try:
+            data = {
+                'persist_exclusions': True,
+                'excluded_folders': self.excluded_folders
+            }
+            with open(self.config_file, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        except Exception as e:
+            print(f"Error guardando exclusiones: {e}")
+    
+    def add_excluded_folder(self):
+        """Abre diálogo para añadir una carpeta a excluir."""
+        folder = filedialog.askdirectory(title="Seleccionar carpeta a excluir")
+        if folder and folder not in self.excluded_folders:
+            self.excluded_folders.append(folder)
+            self.update_excluded_listbox()
+            self.save_excluded_folders()
+    
+    def remove_excluded_folders(self):
+        """Elimina las carpetas seleccionadas de la lista de exclusiones."""
+        selected_indices = self.excluded_listbox.curselection()
+        if not selected_indices:
+            return
+        
+        # Eliminar de atrás hacia adelante para no alterar índices
+        for index in reversed(selected_indices):
+            del self.excluded_folders[index]
+        
+        self.update_excluded_listbox()
+        self.save_excluded_folders()
+    
+    def update_excluded_listbox(self):
+        """Actualiza la listbox con las carpetas excluidas actuales."""
+        self.excluded_listbox.delete(0, tk.END)
+        for folder in self.excluded_folders:
+            self.excluded_listbox.insert(tk.END, folder)
+    
+    def on_persist_toggle(self):
+        """Maneja el cambio del checkbox de persistencia."""
+        self.save_excluded_folders()
 
     # --- Lógica Duplicados (Tab 2) ---
     def start_deduplication(self):

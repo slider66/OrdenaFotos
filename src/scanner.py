@@ -34,16 +34,42 @@ class MediaGroup:
     def __repr__(self):
         return f"<MediaGroup main={self.main_file.name} sidecars={len(self.sidecars)}>"
 
-def scan_directory(source_dir: Path) -> Generator[MediaGroup, None, None]:
+def scan_directory(source_dir: Path, excluded_folders: Set[str] = None) -> Generator[MediaGroup, None, None]:
     """
     Recorre recursivamente el directorio buscando archivos multimedia validos.
     Agrupa automáticamente los archivos sidecar (.xmp, .aae) con su archivo principal
     si comparten el mismo nombre base.
-    """
-    source_path = Path(source_dir)
     
-    for root, _, files in os.walk(source_path):
-        root_path = Path(root)
+    Args:
+        source_dir: Directorio raíz a escanear
+        excluded_folders: Set de rutas absolutas de carpetas a excluir del escaneo
+    
+    Yields:
+        MediaGroup: Grupo de archivos multimedia (principal + sidecars)
+    """
+    source_path = Path(source_dir).resolve()
+    
+    # Normalizar carpetas excluidas a rutas absolutas
+    if excluded_folders is None:
+        excluded_folders = set()
+    else:
+        # Convertir a rutas absolutas y normalizar
+        excluded_folders = {Path(folder).resolve() for folder in excluded_folders}
+    
+    for root, dirs, files in os.walk(source_path):
+        root_path = Path(root).resolve()
+        
+        # Filtrar subdirectorios excluidos ANTES de que os.walk los procese
+        # Modificamos dirs in-place para que os.walk no entre en ellos
+        dirs_to_remove = []
+        for dir_name in dirs:
+            dir_path = (root_path / dir_name).resolve()
+            # Verificar si este directorio o algún padre está en la lista de excluidos
+            if dir_path in excluded_folders or any(dir_path == excluded or dir_path.is_relative_to(excluded) for excluded in excluded_folders):
+                dirs_to_remove.append(dir_name)
+        
+        for dir_name in dirs_to_remove:
+            dirs.remove(dir_name)
         
         # Set de nombres de archivo (minusculas) en el directorio actual para búsqueda rápida
         # Guardamos el nombre real para poder reconstruir el path con el casing correcto
@@ -51,6 +77,11 @@ def scan_directory(source_dir: Path) -> Generator[MediaGroup, None, None]:
         
         for filename in files:
             file_path = root_path / filename
+            
+            # Verificar que el archivo existe (evitar archivos "fantasma")
+            if not file_path.exists():
+                continue
+            
             suffix = file_path.suffix.lower()
             
             # Solo procesamos si es una extensión multimedia válida (Main File)
@@ -71,6 +102,8 @@ def scan_directory(source_dir: Path) -> Generator[MediaGroup, None, None]:
                     if candidate_name_lower in file_map:
                         real_sidecar_name = file_map[candidate_name_lower]
                         sidecar_path = root_path / real_sidecar_name
-                        media_group.add_sidecar(sidecar_path)
+                        # Verificar que el sidecar existe
+                        if sidecar_path.exists():
+                            media_group.add_sidecar(sidecar_path)
                 
                 yield media_group

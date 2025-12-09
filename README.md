@@ -113,6 +113,33 @@ In the current version (`v1.0+`), the application prioritizes safety:
 
 ## 🌟 New Features
 
+### 📁 Folder Exclusion (v2.1)
+
+Exclude specific folders from scanning to avoid processing unwanted files.
+
+**Features:**
+
+- **Visual Interface:** Dedicated section with listbox showing excluded folders
+- **Easy Management:** Add/Remove buttons with multi-select support (Ctrl+Click, Shift+Click)
+- **Optional Persistence:** Checkbox to save exclusions between sessions
+- **Performance:** Folders are filtered during scan (not accessed at all)
+- **Ghost File Prevention:** Automatically skips broken symlinks and non-existent files
+
+**Use Cases:**
+
+- Exclude backup folders
+- Skip cloud sync directories (Dropbox, OneDrive)
+- Ignore system folders
+- Exclude temporary or processed photo folders
+- Skip social media downloads (WhatsApp, Instagram)
+
+**How to Use:**
+
+1. Click "➕ Add" button in "Excluded Folders" section
+2. Select folder to exclude
+3. (Optional) Enable "Save exclusions between sessions" to persist
+4. Selected folders and all their subfolders will be skipped during organization
+
 ### 🧪 Simulation Mode (Dry Run)
 
 Check the **"Modo Simulación"** (Simulation Mode) box to run the analysis without moving a single file.
@@ -120,8 +147,6 @@ Check the **"Modo Simulación"** (Simulation Mode) box to run the analysis witho
 - Verify what would happen.
 - Generate full logs.
 - Perfect for gaining confidence before organizing.
-
-### 📝 Persistent Logs and Viewer
 
 ### 📝 Persistent Logs and Viewer
 

@@ -114,7 +114,34 @@ En la versión actual (`v1.0`), la aplicación prioriza la **automatización des
 - **Colisión de Nombre (Hash Diferente):** Se aplica **RENOMBRADO AUTOMÁTICO** (`archivo_dup_N.ext`).
 - **Eliminar Original:** Por seguridad, nunca se borran originales automáticamente en esta versión.
 
-## 🌟 Nuevas Características (v1.1)
+## 🌟 Nuevas Características
+
+### 📁 Exclusión de Carpetas (v2.1)
+
+Excluye carpetas específicas del escaneo para evitar procesar archivos no deseados.
+
+**Características:**
+
+- **Interfaz Visual:** Sección dedicada con listbox mostrando carpetas excluidas
+- **Gestión Fácil:** Botones Añadir/Eliminar con soporte multi-selección (Ctrl+Click, Shift+Click)
+- **Persistencia Opcional:** Checkbox para guardar exclusiones entre sesiones
+- **Rendimiento:** Las carpetas se filtran durante el escaneo (no se accede a ellas)
+- **Prevención de Archivos Fantasma:** Salta automáticamente enlaces simbólicos rotos y archivos inexistentes
+
+**Casos de Uso:**
+
+- Excluir carpetas de backup
+- Omitir directorios de sincronización en la nube (Dropbox, OneDrive)
+- Ignorar carpetas del sistema
+- Excluir carpetas temporales o de fotos procesadas
+- Omitir descargas de redes sociales (WhatsApp, Instagram)
+
+**Cómo Usar:**
+
+1. Click en botón "➕ Añadir" en sección "Carpetas Excluidas del Escaneo"
+2. Seleccionar carpeta a excluir
+3. (Opcional) Activar "Guardar exclusiones entre sesiones" para persistir
+4. Las carpetas seleccionadas y todas sus subcarpetas serán omitidas durante la organización
 
 ### 🧪 Modo Simulación (Dry Run)
 
