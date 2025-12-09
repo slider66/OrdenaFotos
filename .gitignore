@@ -10,6 +10,9 @@ build/
 *.log
 operaciones_*.log
 
+# User Configuration
+excluded_folders.json
+
 # IDEs
 .vscode/
 .idea/
@@ -18,3 +21,4 @@ operaciones_*.log
 venv/
 .venv/
 env/
+
