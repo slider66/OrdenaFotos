@@ -17,9 +17,16 @@ excluded_folders.json
 # IDEs
 .vscode/
 .idea/
+.gemini/
+.agent/
+_agents/
 
 # Virtual Env
 venv/
 .venv/
 env/
 
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store

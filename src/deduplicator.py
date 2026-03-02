@@ -1,9 +1,8 @@
 import os
 import shutil
 from pathlib import Path
-from typing import Generator, List, Dict, Tuple
+from typing import Generator, List, Dict
 from .integrity import calculate_hash
-from .scanner import ALL_MEDIA_EXTENSIONS
 
 class DuplicateResult:
     def __init__(self, original: Path, duplicates: List[Path]):

@@ -4,9 +4,12 @@ from typing import Generator, List, Set
 
 # Definición de extensiones que consideramos "Multimedia"
 # (Sincronizado con date_extractor y README)
-IMG_EXTENSIONS = {
+IMG_STANDARD = {
     '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp',
-    '.heic', '.heif',
+    '.heic', '.heif'
+}
+
+IMG_RAW = {
     '.dng', '.cr2', '.cr3', '.nef', '.arw', '.raf', '.orf', '.pef'
 }
 
@@ -17,7 +20,7 @@ VIDEO_EXTENSIONS = {
 # Archivos sidecar que deben moverse junto al principal
 SIDECAR_EXTENSIONS = {'.aae', '.xmp', '.thm'}
 
-ALL_MEDIA_EXTENSIONS = IMG_EXTENSIONS.union(VIDEO_EXTENSIONS)
+ALL_MEDIA_EXTENSIONS = IMG_STANDARD.union(IMG_RAW).union(VIDEO_EXTENSIONS)
 
 class MediaGroup:
     """
@@ -56,6 +59,10 @@ def scan_directory(source_dir: Path, excluded_folders: Set[str] = None) -> Gener
         # Convertir a rutas absolutas y normalizar
         excluded_folders = {Path(folder).resolve() for folder in excluded_folders}
     
+    # Check if the source directory itself is excluded
+    if source_path in excluded_folders:
+        return
+    
     for root, dirs, files in os.walk(source_path):
         root_path = Path(root).resolve()
         
@@ -89,21 +96,30 @@ def scan_directory(source_dir: Path, excluded_folders: Set[str] = None) -> Gener
                 media_group = MediaGroup(file_path)
                 
                 # Buscar posibles sidecars asociados a este archivo
-                stem = file_path.stem
-                
+                # Nota: A veces el sidecar es nombrefichero.ext.xmp o nombrefichero.xmp
+                # Probamos ambas posibilidades para cada extensión de sidecar
                 for sidecar_ext in SIDECAR_EXTENSIONS:
-                    # Construir nombre candidato: nombrefichero.xmp
-                    # Nota: A veces el sidecar es nombre.ext.xmp (foto.jpg.xmp) o nombre.xmp (foto.xmp)
-                    # El README da ejemplo: foto.heic y foto.aae -> mismo stem.
-                    # Asumimos coincidencia de stem.
-                    
-                    candidate_name_lower = f"{stem}{sidecar_ext}".lower()
-                    
-                    if candidate_name_lower in file_map:
-                        real_sidecar_name = file_map[candidate_name_lower]
-                        sidecar_path = root_path / real_sidecar_name
-                        # Verificar que el sidecar existe
-                        if sidecar_path.exists():
-                            media_group.add_sidecar(sidecar_path)
+                    possible_sidecar_names = [
+                        f"{file_path.stem}{sidecar_ext}".lower(),
+                        f"{file_path.name}{sidecar_ext}".lower()
+                    ]
+
+                    for candidate_name_lower in possible_sidecar_names:
+                        if candidate_name_lower in file_map:
+                            real_sidecar_name = file_map[candidate_name_lower]
+                            sidecar_path = root_path / real_sidecar_name
+                            if sidecar_path.exists():
+                                media_group.add_sidecar(sidecar_path)
                 
                 yield media_group
+
+def get_media_type(file_path: Path) -> str:
+    """
+    Retorna la categoría del archivo: 'FOTOS', 'RAW' o 'VIDEOS'.
+    """
+    suffix = file_path.suffix.lower()
+    if suffix in IMG_RAW:
+        return "RAW"
+    if suffix in VIDEO_EXTENSIONS:
+        return "VIDEOS"
+    return "FOTOS"

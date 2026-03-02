@@ -236,8 +236,6 @@ Como esta aplicación involucra mover y manipular archivos de iPhone, puede ser 
 
 Este video es relevante porque aborda directamente el manejo de formatos específicos de iPhone (HEIC y AAE), los cuales se incluyen en tu lista de extensiones.
 
-http://googleusercontent.com/youtube_content/2
-
 ---
 
 ## 🚀 Compilación y Ejecución

@@ -7,11 +7,16 @@ from PIL.ExifTags import TAGS
 import exifread
 
 # Definición de Extensiones Soportadas según README
-IMG_EXTENSIONS = {
+IMG_STANDARD = {
     '.jpg', '.jpeg', '.png', '.gif', '.bmp', '.tiff', '.tif', '.webp',  # Estándar
-    '.heic', '.heif',  # Alta Eficiencia
+    '.heic', '.heif'  # Alta Eficiencia
+}
+
+IMG_RAW = {
     '.dng', '.cr2', '.cr3', '.nef', '.arw', '.raf', '.orf', '.pef'  # RAW
 }
+
+IMG_EXTENSIONS = IMG_STANDARD.union(IMG_RAW)
 
 VIDEO_EXTENSIONS = {
     '.mp4', '.mov',  # Estándar / Alta Eficiencia (Contenedores comunes)

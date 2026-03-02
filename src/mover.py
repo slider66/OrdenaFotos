@@ -5,7 +5,7 @@ from typing import Tuple, Optional
 
 from .date_extractor import get_date_taken
 from .integrity import check_duplicate
-from .scanner import MediaGroup
+from .scanner import MediaGroup, get_media_type
 
 # Constantes de Resultados
 STATUS_SUCCESS = "SUCCESS"
@@ -19,7 +19,7 @@ class OperationResult:
         self.message = message
         self.destination = destination
 
-def move_media_safe(media_group: MediaGroup, base_dest_path: Path, duplicate_action: str = 'ask', dry_run: bool = False) -> OperationResult:
+def move_media_safe(media_group: MediaGroup, base_dest_path: Path, duplicate_action: str = 'ask', dry_run: bool = False, classify_by_type: bool = False) -> OperationResult:
     """
     Mueve un grupo multimedia de forma segura a la estructura organizada por fecha.
     
@@ -28,6 +28,7 @@ def move_media_safe(media_group: MediaGroup, base_dest_path: Path, duplicate_act
         base_dest_path: Ruta base de destino
         duplicate_action: 'ask', 'overwrite', 'skip', 'delete_original'
         dry_run: Si es True, no mueve ni borra nada, solo simula.
+        classify_by_type: Si es True, separa en carpetas RAW/FOTOS/VIDEOS dentro del mes.
     """
     try:
         # 1. Determinar Fecha y Ruta Destino
@@ -41,6 +42,11 @@ def move_media_safe(media_group: MediaGroup, base_dest_path: Path, duplicate_act
         folder_month = month_names[date.month] if 1 <= date.month <= 12 else "unknown"
         
         target_dir = base_dest_path / folder_year / folder_month
+
+        # 1.2 Inyectar subcarpeta de tipo si aplica
+        if classify_by_type:
+            media_type = get_media_type(media_group.main_file)
+            target_dir = target_dir / media_type
         
         # 1.5. Verificar IDEMPOTENCIA
         target_main_path = target_dir / media_group.main_file.name
@@ -62,6 +68,9 @@ def move_media_safe(media_group: MediaGroup, base_dest_path: Path, duplicate_act
                 # ---------------------------------------------------------
                 # NUEVA LÓGICA: Mover a carpeta de Revisión de Duplicados
                 # ---------------------------------------------------------
+                if duplicate_action == 'skip':
+                    return OperationResult(STATUS_SKIPPED, "Omitido por configuración (duplicado exacto)")
+
                 if dry_run:
                     return OperationResult(STATUS_SKIPPED, "[SIMULACION] Se movería a carpeta _DUPLICADOS_REVISAR")
 

@@ -10,27 +10,32 @@ from pathlib import Path
 import ttkbootstrap as tb # Import as tb to avoid conflict
 from ttkbootstrap import Style
 from datetime import datetime
+from PIL import Image, ImageTk
 
 # Importamos logica de negocio
 from src.scanner import scan_directory
 from src.mover import move_media_safe, STATUS_SUCCESS, STATUS_SKIPPED, STATUS_ERROR, STATUS_DUPLICATE
 from src.deduplicator import scan_and_move_duplicates
+from src.cleaner import clean_empty_directories
 
 class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
     def __init__(self):
         super().__init__(themename="darkly")
-        self.title("Organizador Multimedia Pro v2.0")
-        self.geometry("750x650")
+        self.title("OrdenaFotos Pro v2.1")
+        self.geometry("800x750")
         self.resizable(False, False)
         
         # Estilo para botones TK estándar
-        # Estilo para botones TK estándar
         self.style.configure('TButton', font=('Segoe UI', 9, 'bold'), padding=(10, 10))
+        self.style.configure('Header.TFrame', background='#1a1a1a')
+        self.style.configure('Header.TLabel', background='#1a1a1a', foreground='#00bc8c', font=('Segoe UI', 18, 'bold'))
+        self.style.configure('SubHeader.TLabel', background='#1a1a1a', foreground='#ffffff', font=('Segoe UI', 9))
 
         # --- Variables (Organizador) ---
         self.source_path = tk.StringVar()
         self.dest_path = tk.StringVar()
         self.dry_run = tk.BooleanVar(value=False)
+        self.classify_by_type = tk.BooleanVar(value=False)
         self.is_running = False
         self.last_log_file = None
         
@@ -46,14 +51,41 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         # Cola de mensajes para thread-safety
         self.log_queue = queue.Queue()
         
+        # Cargar Logo
+        self.logo_img = self._load_logo()
+        
         self._build_ui()
         self.load_excluded_folders()
         self.check_queue()
 
+    def _load_logo(self):
+        logo_path = Path("assets/logo.png")
+        if logo_path.exists():
+            try:
+                img = Image.open(logo_path)
+                img = img.resize((60, 60), Image.LANCZOS)
+                return ImageTk.PhotoImage(img)
+            except:
+                return None
+        return None
+
     def _build_ui(self):
+        # 0. Cabecera Premium
+        header_frame = ttk.Frame(self, style='Header.TFrame', padding=10)
+        header_frame.pack(fill=tk.X)
+        
+        if self.logo_img:
+            logo_label = ttk.Label(header_frame, image=self.logo_img, style='Header.TLabel')
+            logo_label.pack(side=tk.LEFT, padx=(10, 20))
+            
+        title_container = ttk.Frame(header_frame, style='Header.TFrame')
+        title_container.pack(side=tk.LEFT, fill=tk.Y)
+        ttk.Label(title_container, text="OrdenaFotos Pro", style='Header.TLabel').pack(anchor=tk.W)
+        ttk.Label(title_container, text="Organización Inteligente de Multimedia", style='SubHeader.TLabel').pack(anchor=tk.W)
+
         # Contenedor principal con pestañas
         self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill='both', expand=True, padx=10, pady=10)
+        self.notebook.pack(fill='both', expand=True, padx=15, pady=15)
 
         # Tab 1: Organizador
         self.tab_organizer = ttk.Frame(self.notebook)
@@ -68,7 +100,8 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         # Footer común
         footer_frame = ttk.Frame(self)
         footer_frame.pack(side='bottom', fill=tk.X, padx=10, pady=5)
-        ttk.Label(footer_frame, text="slider66 © 2025 OrdenaFotos Pro | v2.0", font=("Segoe UI", 8)).pack(side=tk.RIGHT)
+        current_year = datetime.now().year
+        ttk.Label(footer_frame, text=f"slider66 © {current_year} OrdenaFotos Pro | v2.0", font=("Segoe UI", 8)).pack(side=tk.RIGHT)
         link = ttk.Label(footer_frame, text="Ayuda / Documentación", font=("Segoe UI", 8, "underline"), cursor="hand2")
         link.pack(side=tk.LEFT)
         link.bind("<Button-1>", lambda e: webbrowser.open("https://github.com/slider66/OrdenaFotos"))
@@ -146,7 +179,8 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         opts_frame = ttk.Frame(container)
         opts_frame.pack(fill=tk.X, pady=10)
         
-        ttk.Checkbutton(opts_frame, text="Modo Simulación (Dry Run) - No mueve archivos", variable=self.dry_run, bootstyle="round-toggle").pack(side=tk.LEFT)
+        ttk.Checkbutton(opts_frame, text="Modo Simulación (Dry Run)", variable=self.dry_run, bootstyle="round-toggle").pack(side=tk.LEFT, padx=(0, 20))
+        ttk.Checkbutton(opts_frame, text="Separar por tipo (RAW/Fotos/Video)", variable=self.classify_by_type, bootstyle="round-toggle").pack(side=tk.LEFT)
 
         self.progress_bar = ttk.Progressbar(container, mode='indeterminate', bootstyle="success-striped")
         self.progress_bar.pack(fill=tk.X, pady=(0, 15))
@@ -174,7 +208,9 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         log_frame = ttk.LabelFrame(container, text=" Registro de Actividad ", padding=5)
         log_frame.pack(fill='both', expand=True, pady=(15, 0))
 
-        self.log_text = tk.Text(log_frame, height=8, state='disabled', font=("Consolas", 9))
+        self.log_text = tk.Text(log_frame, height=8, state='disabled', 
+                                font=("Consolas", 10), bg="#0d0d0d", fg="#00ffcc",
+                                insertbackground="white", selectbackground="#333333")
         self.log_text.pack(side=tk.LEFT, fill='both', expand=True)
         scrollbar = ttk.Scrollbar(log_frame, command=self.log_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill='y')
@@ -205,10 +241,12 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         self.dup_progress.pack(fill=tk.X, pady=10)
 
         # Log Específico
-        log_frame = ttk.LabelFrame(container, text=" Resultados de Búsqueda ", padding=5)
+        log_frame = ttk.LabelFrame(container, text=" Resultados de Benchs ", padding=5)
         log_frame.pack(fill='both', expand=True)
 
-        self.dup_log_text = tk.Text(log_frame, height=10, state='disabled', font=("Consolas", 9))
+        self.dup_log_text = tk.Text(log_frame, height=10, state='disabled', 
+                                    font=("Consolas", 10), bg="#0d0d0d", fg="#f1c40f",
+                                    insertbackground="white", selectbackground="#333333")
         self.dup_log_text.pack(side=tk.LEFT, fill='both', expand=True)
         scrollbar = ttk.Scrollbar(log_frame, command=self.dup_log_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill='y')
@@ -262,7 +300,9 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         self.log_text.delete(1.0, tk.END)
         self.log_text.config(state='disabled')
 
-        threading.Thread(target=self.run_organization, args=(src, dest), daemon=True).start()
+        threading.Thread(target=self.run_organization, 
+                         args=(src, dest, self.dry_run.get(), self.classify_by_type.get()), 
+                         daemon=True).start()
 
     def stop_process(self):
         self.is_running = False
@@ -281,17 +321,19 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         else:
             messagebox.showinfo("Info", "No hay log disponible reciente.")
 
-    def run_organization(self, src_path, dest_path):
-        self.log_message(f"--- Iniciando {'SIMULACIÓN' if self.dry_run.get() else 'PROCESO'} ---", 'organizer')
+    def run_organization(self, src_path, dest_path, dry_run, classify_by_type):
+        self.log_message(f"--- Iniciando {'SIMULACIÓN' if dry_run else 'PROCESO'} ---", 'organizer')
         self.log_message(f"Origen: {src_path}", 'organizer')
         self.log_message(f"Destino: {dest_path}", 'organizer')
+        if classify_by_type:
+            self.log_message("Modo: Clasificación por tipo activa (RAW/FOTOS/VIDEOS)", 'organizer')
         
         # Preparar Log File
         log_filename = f"operaciones_{datetime.now().strftime('%Y%m%d_%H%M%S')}.log"
         log_path = Path(dest_path) / log_filename
         self.last_log_file = str(log_path)
 
-        if not self.dry_run.get():
+        if not dry_run:
              try:
                  Path(dest_path).mkdir(parents=True, exist_ok=True)
              except Exception as e:
@@ -315,7 +357,10 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
                         break
                     
                     try:
-                        result = move_media_safe(media_group, Path(dest_path), duplicate_action='ask', dry_run=self.dry_run.get())
+                        result = move_media_safe(media_group, Path(dest_path), 
+                                                duplicate_action='ask', 
+                                                dry_run=dry_run,
+                                                classify_by_type=classify_by_type)
                         
                         icon = "✅"
                         if result.status == STATUS_SKIPPED: icon = "⏭️"
@@ -333,9 +378,9 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
                 
                 log_both(f"--- FINALIZADO. Total: {total_processed} | Errores: {errors} ---")
                 
-                if not self.dry_run.get() and self.is_running:
+                if not dry_run and self.is_running:
                     log_both("Limpiando carpetas vacías en origen...")
-                    self.cleanup_empty_folders(Path(src_path))
+                    clean_empty_directories(Path(src_path))
                     log_both("Limpieza completada.")
 
         except Exception as e:
@@ -351,15 +396,6 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         self.btn_start.config(state='normal', bg="#00bc8c")
         self.btn_stop.config(state='disabled', bg="#e74c3c")
 
-    def cleanup_empty_folders(self, path):
-        for root, dirs, files in os.walk(path, topdown=False):
-            for name in dirs:
-                try:
-                    p = Path(root) / name
-                    if not any(p.iterdir()):
-                        p.rmdir()
-                except:
-                    pass
     
     # --- Funciones de Exclusión de Carpetas ---
     def load_excluded_folders(self):
