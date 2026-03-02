@@ -102,17 +102,17 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
 
         # Tab 1: Organizador
         self.tab_organizer = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_organizer, text=" ⚡ ENGINE ")
+        self.notebook.add(self.tab_organizer, text=" ⚡ ORDENAR ")
         self._build_organizer_tab(self.tab_organizer)
 
         # Tab 2: Limpiador de Duplicados
         self.tab_duplicates = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_duplicates, text=" 🛡️ INTEGRITY ")
+        self.notebook.add(self.tab_duplicates, text=" 🛡️ BUSCAR DUPLICADOS ")
         self._build_duplicates_tab(self.tab_duplicates)
 
         # Tab 3: Ayuda y Soporte
         self.tab_help = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_help, text=" ℹ️ SUPPORT ")
+        self.notebook.add(self.tab_help, text=" ℹ️ AYUDA ")
         self._build_help_tab(self.tab_help)
 
         # Footer común
@@ -278,7 +278,7 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         help_title.pack(pady=(0, 20))
 
         help_text_content = """
-⚡ SYNKORE ENGINE (Organizador)
+⚡ SYNKORE - MOTOR DE ORDENACIÓN
 -------------------------------------------------------
 Este módulo utiliza algoritmos de extracción de metadatos (EXIF) para clasificar 
 tus archivos multimedia en una estructura jerárquica de TIEMPO (Año/Mes).
@@ -288,7 +288,7 @@ OPCIONES AVANZADAS:
 - Simulación: Permite previsualizar los cambios sin afectar a los archivos físicos.
 - Exclusiones: Evita el procesamiento de carpetas críticas o de backup.
 
-🛡️ INTEGRITY SYSTEM (Duplicados)
+🛡️ SYNKORE - SISTEMA DE INTEGRIDAD
 -------------------------------------------------------
 Utiliza el algoritmo de hashing SHA-256 para garantizar que dos archivos son 
 IDÉNTICOS bit a bit, ignorando nombres de archivo o fechas de modificación.
