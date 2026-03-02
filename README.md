@@ -1,4 +1,4 @@
-# 📂 Local Media Organizer Utility
+# 📂 SYNKORE - Advanced Photo & Video Sync Engine
 
 > 🇪🇸 [Leer en Español](README.es.md)
 
@@ -26,8 +26,8 @@ Create a simple and robust local desktop application designed to automate the or
 
 ### For Users (Pre-compiled Executable)
 
-1. Download the latest `.exe` from [Releases](https://github.com/slider66/OrdenaFotos/releases)
-2. Run `OrdenaFotos_Pro.exe`
+1. Download the latest `.exe` from [Releases](https://github.com/slider66/SYNKORE/releases)
+2. Run `SYNKORE_Pro.exe`
 3. Select source and destination folders
 4. Click "INICIAR ORGANIZACIÓN"
 
@@ -57,7 +57,6 @@ Create a simple and robust local desktop application designed to automate the or
    ```
 
    Dependencies installed:
-
    - `Pillow` - Image processing and EXIF reading
    - `ExifRead` - Additional EXIF metadata extraction
    - `ttkbootstrap` - Modern UI theme
@@ -199,6 +198,27 @@ Exclude specific folders from scanning to avoid processing unwanted files.
 3. (Optional) Enable "Save exclusions between sessions" to persist
 4. Selected folders and all their subfolders will be skipped during organization
 
+### 📂 Classification by Type (v2.1)
+
+New option to automatically separate files within the month folder.
+
+- **PHOTOS**: Standard images (JPG, PNG, WebP, etc.) and high-efficiency images (HEIC).
+- **RAW**: Digital negatives from professional cameras (ARW, DNG, CR2, NEF, etc.).
+- **VIDEOS**: All supported video formats (MP4, MOV, AVI, etc.).
+
+**How to Use:**
+
+1. Check the **"Separar por tipo (RAW/Fotos/Video)"** box.
+2. Files will be moved to `Year/Month/CATEGORY/` instead of directly to the month folder.
+
+### 🎨 New Premium UI (v2.1)
+
+The application has been redesigned to offer a high-level visual experience.
+
+- **Modern Header**: Includes the new official project logo.
+- **"Pro" Console**: Activity logs now use a dark terminal aesthetic with neon color highlighting for better readability.
+- **Visual Hierarchy**: Improved typography and spacing for more intuitive handling.
+
 ### 🧪 Simulation Mode (Dry Run)
 
 Check the **"Modo Simulación"** (Simulation Mode) box to run the analysis without moving a single file.
@@ -280,4 +300,4 @@ This application has undergone a battery of automated tests to guarantee file sa
    - Stops infinite loops if destination folder is inside source.
 5. **Non-Destructive:** Confirmed that source is NEVER deleted without first validating existence and byte-to-byte size in destination.
 
-# OrdenaFotos
+# SYNKORE

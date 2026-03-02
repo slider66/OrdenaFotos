@@ -1,4 +1,4 @@
-# 📂 Utilidad de Organización Multimedia Local
+# 📂 SYNKORE - Advanced Photo & Video Sync Engine
 
 > 🇺🇸 [Read in English](README.md)
 
@@ -6,8 +6,8 @@
 
 Crear una aplicación de escritorio local, sencilla y robusta, diseñada para automatizar la organización de archivos multimedia. Incluye dos herramientas principales:
 
-1.  **Organizador Multimedia:** Mueve fotos/videos a carpetas por Fecha (Año/Mes).
-2.  **Buscador de Duplicados (Nuevo en v2.0):** Escanea una carpeta, detecta archivos idénticos y los aísla para limpieza.
+1.  **SYNKORE Engine:** Mueve fotos/videos a carpetas por Fecha (Año/Mes).
+2.  **SYNKORE Integrity:** Escanea una carpeta, detecta archivos idénticos y los aísla para limpieza.
 
 **Ejemplo de Organización:**
 
@@ -29,8 +29,8 @@ Crear una aplicación de escritorio local, sencilla y robusta, diseñada para au
 
 ### Para Usuarios (Ejecutable Precompilado)
 
-1. Descarga el último `.exe` desde [Releases](https://github.com/slider66/OrdenaFotos/releases)
-2. Ejecuta `OrdenaFotos_Pro.exe`
+1. Descarga el último `.exe` desde [Releases](https://github.com/slider66/SYNKORE/releases)
+2. Ejecuta `SYNKORE_Pro.exe`
 3. Selecciona carpetas de origen y destino
 4. Click en "INICIAR ORGANIZACIÓN"
 
@@ -60,7 +60,6 @@ Crear una aplicación de escritorio local, sencilla y robusta, diseñada para au
    ```
 
    Dependencias instaladas:
-
    - `Pillow` - Procesamiento de imágenes y lectura EXIF
    - `ExifRead` - Extracción adicional de metadatos EXIF
    - `ttkbootstrap` - Tema moderno para UI
@@ -201,6 +200,27 @@ Excluye carpetas específicas del escaneo para evitar procesar archivos no desea
 2. Seleccionar carpeta a excluir
 3. (Opcional) Activar "Guardar exclusiones entre sesiones" para persistir
 4. Las carpetas seleccionadas y todas sus subcarpetas serán omitidas durante la organización
+
+### 📂 Clasificación por Tipo (v2.1)
+
+Nueva opción para separar archivos automáticamente dentro de la carpeta del mes.
+
+- **FOTOS**: Imágenes estándar (JPG, PNG, WebP, etc.) e imágenes de alta eficiencia (HEIC).
+- **RAW**: Archivos de negativos digitales de cámaras profesionales (ARW, DNG, CR2, NEF, etc.).
+- **VIDEOS**: Todos los formatos de video soportados (MP4, MOV, AVI, etc.).
+
+**Cómo Usar:**
+
+1. Activa la casilla **"Separar por tipo (RAW/Fotos/Video)"**.
+2. Los archivos se moverán a `Año/Mes/CATEGORIA/` en lugar de directamente al mes.
+
+### 🎨 Nueva Interfaz Premium (v2.1)
+
+Se ha rediseñado la aplicación para ofrecer una experiencia visual de alto nivel.
+
+- **Cabecera Moderna**: Incluye el nuevo logotipo oficial del proyecto.
+- **Consola "Pro"**: Los registros de actividad ahora utilizan una estética de terminal oscura con resaltado en colores neón para mayor legibilidad.
+- **Jerarquía Visual**: Mejoras en tipografía y espaciado para un manejo más intuitivo.
 
 ### 🧪 Modo Simulación (Dry Run)
 

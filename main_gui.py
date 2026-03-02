@@ -21,15 +21,17 @@ from src.cleaner import clean_empty_directories
 class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
     def __init__(self):
         super().__init__(themename="darkly")
-        self.title("OrdenaFotos Pro v2.1")
-        self.geometry("800x750")
+        self.title("SYNKORE Pro v2.1")
+        self.geometry("850x800")
         self.resizable(False, False)
         
         # Estilo para botones TK estándar
         self.style.configure('TButton', font=('Segoe UI', 9, 'bold'), padding=(10, 10))
-        self.style.configure('Header.TFrame', background='#1a1a1a')
-        self.style.configure('Header.TLabel', background='#1a1a1a', foreground='#00bc8c', font=('Segoe UI', 18, 'bold'))
-        self.style.configure('SubHeader.TLabel', background='#1a1a1a', foreground='#ffffff', font=('Segoe UI', 9))
+        self.style.configure('Header.TFrame', background='#0a0a0a')
+        self.style.configure('Header.TLabel', background='#0a0a0a', foreground='#00f2ff', font=('Segoe UI', 22, 'bold'))
+        self.style.configure('SubHeader.TLabel', background='#0a0a0a', foreground='#0040ff', font=('Segoe UI', 10, 'italic'))
+        self.style.configure('Futuristic.TLabelframe', bordercolor='#00f2ff', borderwidth=2)
+        self.style.configure('Futuristic.TLabelframe.Label', foreground='#00f2ff', font=('Segoe UI', 10, 'bold'))
 
         # --- Variables (Organizador) ---
         self.source_path = tk.StringVar()
@@ -69,33 +71,49 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
                 return None
         return None
 
+    def _load_logo(self):
+        logo_path = Path("assets/logo_synkore.png")
+        if logo_path.exists():
+            try:
+                img = Image.open(logo_path)
+                img = img.resize((70, 70), Image.LANCZOS)
+                return ImageTk.PhotoImage(img)
+            except:
+                return None
+        return None
+
     def _build_ui(self):
-        # 0. Cabecera Premium
-        header_frame = ttk.Frame(self, style='Header.TFrame', padding=10)
+        # 0. Cabecera SYNKORE
+        header_frame = ttk.Frame(self, style='Header.TFrame', padding=15)
         header_frame.pack(fill=tk.X)
         
         if self.logo_img:
             logo_label = ttk.Label(header_frame, image=self.logo_img, style='Header.TLabel')
-            logo_label.pack(side=tk.LEFT, padx=(10, 20))
+            logo_label.pack(side=tk.LEFT, padx=(20, 30))
             
         title_container = ttk.Frame(header_frame, style='Header.TFrame')
         title_container.pack(side=tk.LEFT, fill=tk.Y)
-        ttk.Label(title_container, text="OrdenaFotos Pro", style='Header.TLabel').pack(anchor=tk.W)
-        ttk.Label(title_container, text="Organización Inteligente de Multimedia", style='SubHeader.TLabel').pack(anchor=tk.W)
+        ttk.Label(title_container, text="SYNKORE", style='Header.TLabel').pack(anchor=tk.W)
+        ttk.Label(title_container, text="ADVANCED PHOTO & VIDEO SYNC ENGINE", style='SubHeader.TLabel').pack(anchor=tk.W)
 
         # Contenedor principal con pestañas
         self.notebook = ttk.Notebook(self)
-        self.notebook.pack(fill='both', expand=True, padx=15, pady=15)
+        self.notebook.pack(fill='both', expand=True, padx=20, pady=20)
 
         # Tab 1: Organizador
         self.tab_organizer = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_organizer, text=" 📂 Organizador Multimedia ")
+        self.notebook.add(self.tab_organizer, text=" ⚡ ENGINE ")
         self._build_organizer_tab(self.tab_organizer)
 
         # Tab 2: Limpiador de Duplicados
         self.tab_duplicates = ttk.Frame(self.notebook)
-        self.notebook.add(self.tab_duplicates, text=" 🕵️ Buscador de Duplicados ")
+        self.notebook.add(self.tab_duplicates, text=" 🛡️ INTEGRITY ")
         self._build_duplicates_tab(self.tab_duplicates)
+
+        # Tab 3: Ayuda y Soporte
+        self.tab_help = ttk.Frame(self.notebook)
+        self.notebook.add(self.tab_help, text=" ℹ️ SUPPORT ")
+        self._build_help_tab(self.tab_help)
 
         # Footer común
         footer_frame = ttk.Frame(self)
@@ -111,7 +129,7 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         container.pack(fill='both', expand=True)
 
         # --- SECCIÓN 1: Selección de Rutas ---
-        lbl_frame = ttk.LabelFrame(container, text=" Configuración de Rutas ", padding=10)
+        lbl_frame = ttk.LabelFrame(container, text=" CONFIGURACIÓN DE RUTAS ", padding=10, style='Futuristic.TLabelframe')
         lbl_frame.pack(fill=tk.X, pady=(0, 10))
 
         # Origen
@@ -251,6 +269,41 @@ class OrganizerApp(tb.Window): # Extend tb.Window instead of ttk.Window
         scrollbar = ttk.Scrollbar(log_frame, command=self.dup_log_text.yview)
         scrollbar.pack(side=tk.RIGHT, fill='y')
         self.dup_log_text['yscrollcommand'] = scrollbar.set
+
+    def _build_help_tab(self, parent):
+        container = ttk.Frame(parent, padding=20)
+        container.pack(fill='both', expand=True)
+
+        help_title = ttk.Label(container, text="SYNKORE INTELLIGENCE SYSTEM", font=('Segoe UI', 14, 'bold'), foreground='#00f2ff')
+        help_title.pack(pady=(0, 20))
+
+        help_text_content = """
+⚡ SYNKORE ENGINE (Organizador)
+-------------------------------------------------------
+Este módulo utiliza algoritmos de extracción de metadatos (EXIF) para clasificar 
+tus archivos multimedia en una estructura jerárquica de TIEMPO (Año/Mes).
+
+OPCIONES AVANZADAS:
+- Clasificación por Tipo: Separa automáticamente FOTOS, RAW y VIDEOS en subcarpetas.
+- Simulación: Permite previsualizar los cambios sin afectar a los archivos físicos.
+- Exclusiones: Evita el procesamiento de carpetas críticas o de backup.
+
+🛡️ INTEGRITY SYSTEM (Duplicados)
+-------------------------------------------------------
+Utiliza el algoritmo de hashing SHA-256 para garantizar que dos archivos son 
+IDÉNTICOS bit a bit, ignorando nombres de archivo o fechas de modificación.
+
+SEGURIDAD:
+- Los duplicados detectados se mueven a una carpeta de cuarentena (_DUPLICADOS).
+- SYNKORE nunca elimina archivos de forma definitiva sin intervención del usuario.
+        """
+
+        help_box = tk.Text(container, height=20, state='normal', 
+                           font=("Segoe UI", 10), bg="#0d0d0d", fg="#ffffff",
+                           padx=15, pady=15, relief="flat")
+        help_box.insert(tk.END, help_text_content)
+        help_box.config(state='disabled')
+        help_box.pack(fill='both', expand=True)
 
     # --- Funciones GUI Genéricas ---
     def log_message(self, message, area='organizer'):
